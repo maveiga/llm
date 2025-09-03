@@ -1,0 +1,12 @@
+Título: Segurança da Informação - Documento 1
+Categoria: Segurança da Informação
+
+A empresa cumpre todas as exigências da LGPD em seus processos.
+
+Relatórios de segurança são enviados mensalmente à diretoria.
+
+Esta linha não tem relação com o conteúdo da categoria.
+
+Frase genérica sem valor semântico: 1234567890.
+
+Treinamentos de segurança da informação são realizados a cada semestre.

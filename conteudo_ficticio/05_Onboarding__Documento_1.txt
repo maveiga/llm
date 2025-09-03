@@ -1,0 +1,12 @@
+Título: Onboarding - Documento 1
+Categoria: Onboarding
+
+Esta linha não tem relação com o conteúdo da categoria.
+
+Cada novo colaborador recebe um mentor para acompanhamento nos primeiros dias.
+
+O processo de onboarding começa com a coleta de dados pessoais e profissionais.
+
+Dados fictícios devem ser ignorados pelo modelo.
+
+Treinamentos obrigatórios incluem ética, segurança e uso de sistemas internos.

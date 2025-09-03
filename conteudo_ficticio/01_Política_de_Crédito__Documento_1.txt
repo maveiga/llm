@@ -1,0 +1,10 @@
+Título: Política de Crédito - Documento 1
+Categoria: Política de Crédito
+
+Empréstimos são concedidos apenas após verificação cadastral completa.
+
+O sistema de crédito é integrado com bureaus externos para validação de informações.
+
+Casos de suspeita de fraude são imediatamente reportados e bloqueados.
+
+Este parágrafo é um exemplo de ruído textual proposital.

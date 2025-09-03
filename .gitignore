@@ -1,0 +1,44 @@
+# Virtual environment
+venv/
+.env/
+.envrc/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Arquivos grandes e binários
+*.lib
+*.dll
+*.so
+*.dylib
+*.exe
+
+# Pacotes instalados
+site-packages/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Arquivos de dados grandes (opcional - se não quiser subir)
+*.pkl
+*.pickle
+*.h5
+*.csv
+*.parquet

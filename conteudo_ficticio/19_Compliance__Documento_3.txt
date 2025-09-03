@@ -1,0 +1,12 @@
+Título: Compliance - Documento 3
+Categoria: Compliance
+
+Dados fictícios devem ser ignorados pelo modelo.
+
+Registros e documentos são armazenados conforme normas da CVM.
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+A empresa atua em conformidade com diretrizes do Banco Central.
+
+Treinamentos de integridade são obrigatórios e realizados anualmente.

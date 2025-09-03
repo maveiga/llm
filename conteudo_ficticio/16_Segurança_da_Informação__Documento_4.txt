@@ -1,0 +1,10 @@
+Título: Segurança da Informação - Documento 4
+Categoria: Segurança da Informação
+
+Informação irrelevante: Banana azul voadora.
+
+Backups são realizados diariamente em servidores em nuvem seguros.
+
+Todos os sistemas utilizam criptografia de ponta a ponta (AES-256).
+
+É proibido o uso de e-mail pessoal para fins corporativos.

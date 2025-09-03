@@ -1,0 +1,12 @@
+Título: Segurança da Informação - Documento 2
+Categoria: Segurança da Informação
+
+Este parágrafo é um exemplo de ruído textual proposital.
+
+O sistema bloqueia acessos após 5 tentativas de login incorretas.
+
+A equipe de TI monitora e registra acessos suspeitos 24/7.
+
+Frase genérica sem valor semântico: 1234567890.
+
+Todos os dispositivos corporativos devem conter antivírus homologado.

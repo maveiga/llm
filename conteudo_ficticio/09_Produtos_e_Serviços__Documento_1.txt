@@ -1,0 +1,10 @@
+Título: Produtos e Serviços - Documento 1
+Categoria: Produtos e Serviços
+
+Clientes podem antecipar o FGTS para projetos pessoais ou dívidas.
+
+Oferecemos crédito pessoal com taxas a partir de 1,5% ao mês.
+
+Financiamento de veículos pode ser feito com entrada mínima de 20%.
+
+Dados fictícios devem ser ignorados pelo modelo.

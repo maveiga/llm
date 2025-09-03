@@ -1,0 +1,10 @@
+Título: Segurança da Informação - Documento 3
+Categoria: Segurança da Informação
+
+A autenticação em dois fatores é obrigatória para acessos sensíveis.
+
+Senhas devem conter pelo menos 12 caracteres e símbolos especiais.
+
+Frase genérica sem valor semântico: 1234567890.
+
+Incidentes de segurança devem ser reportados em até 2 horas.
