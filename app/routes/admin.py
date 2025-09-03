@@ -12,14 +12,19 @@ vector_service = VectorService()
 async def load_documents_from_directory(directory_path: str = "conteudo_ficticio"):
     try:
         documents = processor.load_documents_from_directory(directory_path)
-        chunked_docs = processor.chunk_documents(documents)
-        for chunk in chunked_docs:
-            await vector_service.add_document(chunk)
+        
+        total_chunks = 0
+        for document in documents:
+            chunked_docs = processor.chunk_document(document)
+            
+            for chunk in chunked_docs:
+                await vector_service.add_document(chunk)
+                total_chunks += 1
         
         return {
-            "message": f"Successfully loaded {chunked_docs} document chunks from {len(documents)} files",
+            "message": f"Successfully loaded {total_chunks} document chunks from {len(documents)} files",
             "total_files": len(documents),
-            "total_chunks": chunked_docs
+            "total_chunks": total_chunks
         }
     
     except Exception as e:

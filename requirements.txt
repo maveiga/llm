@@ -6,3 +6,4 @@ sentence-transformers
 python-multipart
 pydantic-settings
 spacy #python -m spacy download pt_core_news_lg
+numpy
