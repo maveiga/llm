@@ -1,5 +1,5 @@
 === EMBEDDINGS EXTRAÍDOS DO CHROMADB ===
-Data de extração: 2025-09-03 01:38:53
+Data de extração: 2025-09-04 00:23:06
 Total de documentos: 20
 Coleção: documents
 Diretório ChromaDB: ./chroma_data
@@ -7,201 +7,221 @@ Diretório ChromaDB: ./chroma_data
 
 
 --- DOCUMENTO 1 ---
-ID: Política de Crédito_-5690233227420093617
+ID: Política de Crédito_1337314484400272075
 Título: Política de Crédito - Documento 1 - Chunk 1
 Categoria: Política de Crédito
-Tamanho: 156 caracteres
-Metadados extras: {'source_file': '01_Política_de_Crédito__Documento_1.txt', 'file_path': 'conteudo_ficticio\\01_Política_de_Crédito__Documento_1.txt', 'total_chunks': 1, 'chunk_index': 0}
+Tamanho: 299 caracteres
+Metadados extras: {'total_chunks': 1, 'source_file': '01_Política_de_Crédito__Documento_1.txt', 'chunk_index': 0, 'file_path': 'conteudo_ficticio\\01_Política_de_Crédito__Documento_1.txt'}
 --------------------------------------------------
-empréstimo concedir verificação cadastral completo crédito integrar bureau externo validação informação caso suspeita fraude imediatamente reportar bloquear
+Título: Política de Crédito - Documento 1 Categoria: Política de Crédito Empréstimos são concedidos apenas após verificação cadastral completa. O sistema de crédito é integrado com bureaus externos para validação de informações. Casos de suspeita de fraude são imediatamente reportados e bloqueados.
 ============================================================
 
 --- DOCUMENTO 2 ---
-ID: Política de Crédito_-6014308763568796533
+ID: Política de Crédito_-4104432844649778419
 Título: Política de Crédito - Documento 2 - Chunk 1
 Categoria: Política de Crédito
-Tamanho: 175 caracteres
-Metadados extras: {'total_chunks': 1, 'source_file': '02_Política_de_Crédito__Documento_2.txt', 'chunk_index': 0, 'file_path': 'conteudo_ficticio\\02_Política_de_Crédito__Documento_2.txt'}
+Tamanho: 375 caracteres
+Metadados extras: {'source_file': '02_Política_de_Crédito__Documento_2.txt', 'chunk_index': 0, 'file_path': 'conteudo_ficticio\\02_Política_de_Crédito__Documento_2.txt', 'total_chunks': 1}
 --------------------------------------------------
-análises adicional exigir cliente histórico inadimplência política crédito definir critério rigoroso concessão empréstimo cliente solicitar reavaliação limite 6 relacionamento
+Título: Política de Crédito - Documento 2 Categoria: Política de Crédito
+
+Análises adicionais podem ser exigidas para clientes com histórico de inadimplência. A política de crédito define critérios rigorosos para a concessão de empréstimos. Esta linha não tem relação com o conteúdo da categoria. Clientes podem solicitar reavaliação de limite após 6 meses de relacionamento.
 ============================================================
 
 --- DOCUMENTO 3 ---
-ID: Política de Crédito_-7014849127213049382
+ID: Política de Crédito_1548313279210386575
 Título: Política de Crédito - Documento 3 - Chunk 1
 Categoria: Política de Crédito
-Tamanho: 125 caracteres
-Metadados extras: {'chunk_index': 0, 'file_path': 'conteudo_ficticio\\03_Política_de_Crédito__Documento_3.txt', 'source_file': '03_Política_de_Crédito__Documento_3.txt', 'total_chunks': 1}
+Tamanho: 286 caracteres
+Metadados extras: {'chunk_index': 0, 'source_file': '03_Política_de_Crédito__Documento_3.txt', 'total_chunks': 1, 'file_path': 'conteudo_ficticio\\03_Política_de_Crédito__Documento_3.txt'}
 --------------------------------------------------
-cliente negativar quitar dívida anterior análise aprovação depender comitê crédito revisões periódico realizar contrato risco
+Título: Política de Crédito - Documento 3 Categoria: Política de Crédito
+
+Informação irrelevante: Clientes negativados devem quitar dívidas anteriores antes de nova análise. A aprovação final depende do comitê de crédito. Revisões periódicas são realizadas nos contratos de maior risco.
 ============================================================
 
 --- DOCUMENTO 4 ---
-ID: Política de Crédito_-7827857052106816109
+ID: Política de Crédito_-4465431396843800687
 Título: Política de Crédito - Documento 4 - Chunk 1
 Categoria: Política de Crédito
-Tamanho: 239 caracteres
-Metadados extras: {'file_path': 'conteudo_ficticio\\04_Política_de_Crédito__Documento_4.txt', 'source_file': '04_Política_de_Crédito__Documento_4.txt', 'total_chunks': 1, 'chunk_index': 0}
+Tamanho: 291 caracteres
+Metadados extras: {'file_path': 'conteudo_ficticio\\04_Política_de_Crédito__Documento_4.txt', 'total_chunks': 1, 'chunk_index': 0, 'source_file': '04_Política_de_Crédito__Documento_4.txt'}
 --------------------------------------------------
-cliente apresentar comprovante renda residência atualizar texto aleatório inserir ruído teste empresa seguir padrão estabelecer banco central brasil limites crédito definir base renda score análise risco texto aleatório inserir ruído teste
+Título: Política de Crédito - Documento 4 Categoria: Política de Crédito O cliente deve apresentar comprovante de renda e residência atualizados. A empresa segue padrões estabelecidos pelo Banco Central do Brasil. Limites de crédito são definidos com base em renda, score e análise de risco.
 ============================================================
 
 --- DOCUMENTO 5 ---
-ID: Onboarding_630073294464044170
+ID: Onboarding_1826961133816774903
 Título: Onboarding - Documento 1 - Chunk 1
 Categoria: Onboarding
-Tamanho: 115 caracteres
-Metadados extras: {'total_chunks': 1, 'source_file': '05_Onboarding__Documento_1.txt', 'chunk_index': 0, 'file_path': 'conteudo_ficticio\\05_Onboarding__Documento_1.txt'}
+Tamanho: 326 caracteres
+Metadados extras: {'source_file': '05_Onboarding__Documento_1.txt', 'chunk_index': 0, 'file_path': 'conteudo_ficticio\\05_Onboarding__Documento_1.txt', 'total_chunks': 1}
 --------------------------------------------------
-colaborador receber mentor acompanhamento primeiro dia processo onboarding começar coleta dado pessoal profissional
+Título: Onboarding - Documento 1 Esta linha não tem relação com o conteúdo da categoria. Cada novo colaborador recebe um mentor para acompanhamento nos primeiros dias. O processo de onboarding começa com a coleta de dados pessoais e profissionais. Treinamentos obrigatórios incluem ética, segurança e uso de sistemas internos.
 ============================================================
 
 --- DOCUMENTO 6 ---
-ID: Onboarding_5202626102412379990
+ID: Onboarding_8419772134043796923
 Título: Onboarding - Documento 2 - Chunk 1
 Categoria: Onboarding
-Tamanho: 87 caracteres
-Metadados extras: {'source_file': '06_Onboarding__Documento_2.txt', 'file_path': 'conteudo_ficticio\\06_Onboarding__Documento_2.txt', 'chunk_index': 0, 'total_chunks': 1}
+Tamanho: 219 caracteres
+Metadados extras: {'file_path': 'conteudo_ficticio\\06_Onboarding__Documento_2.txt', 'chunk_index': 0, 'total_chunks': 1, 'source_file': '06_Onboarding__Documento_2.txt'}
 --------------------------------------------------
-frase genérico semântico 1234567890 colaborador enviar documento ver plataforma digital
+Título: Onboarding - Documento 2 O kit de boas-vindas inclui manual institucional e acesso aos sistemas. Dúvidas podem ser enviadas via chat interno com o RH. O colaborador deve enviar documentos via plataforma digital.
 ============================================================
 
 --- DOCUMENTO 7 ---
-ID: Onboarding_-1197555076938455837
+ID: Onboarding_8249474845013176042
 Título: Onboarding - Documento 3 - Chunk 1
 Categoria: Onboarding
-Tamanho: 142 caracteres
-Metadados extras: {'file_path': 'conteudo_ficticio\\07_Onboarding__Documento_3.txt', 'chunk_index': 0, 'source_file': '07_Onboarding__Documento_3.txt', 'total_chunks': 1}
+Tamanho: 341 caracteres
+Metadados extras: {'chunk_index': 0, 'source_file': '07_Onboarding__Documento_3.txt', 'total_chunks': 1, 'file_path': 'conteudo_ficticio\\07_Onboarding__Documento_3.txt'}
 --------------------------------------------------
-rh realizar reunião integração segunda-feira processo concluir 5 dia útil admissão plataforma onboarding oferecer tutorial interativo processo
+Título: Onboarding - Documento 3 Categoria: Onboarding
+
+Informação irrelevante: A área de RH realiza reuniões de integração toda segunda-feira. Esta linha não tem relação com o conteúdo da categoria. O processo deve ser concluído em até 5 dias úteis após admissão. A plataforma de onboarding oferece tutoriais interativos sobre os processos.
 ============================================================
 
 --- DOCUMENTO 8 ---
-ID: Onboarding_46013818565731198
+ID: Onboarding_-727272369805478628
 Título: Onboarding - Documento 4 - Chunk 1
 Categoria: Onboarding
-Tamanho: 179 caracteres
-Metadados extras: {'file_path': 'conteudo_ficticio\\08_Onboarding__Documento_4.txt', 'total_chunks': 1, 'source_file': '08_Onboarding__Documento_4.txt', 'chunk_index': 0}
+Tamanho: 258 caracteres
+Metadados extras: {'source_file': '08_Onboarding__Documento_4.txt', 'file_path': 'conteudo_ficticio\\08_Onboarding__Documento_4.txt', 'total_chunks': 1, 'chunk_index': 0}
 --------------------------------------------------
-pendência documental impedir liberação e-mail corporativo texto aleatório inserir ruído teste onboarding aplicar avaliação conhecimento contrato digital assinar autenticação etapa
+Título: Onboarding - Documento 4 Categoria: Onboarding
+
+Pendências documentais impedem a liberação do e-mail corporativo. Ao final do onboarding, é aplicada uma avaliação de conhecimento. O contrato digital é assinado por meio de autenticação em duas etapas.
 ============================================================
 
 --- DOCUMENTO 9 ---
-ID: Produtos e Serviços_4601720616600771373
+ID: Produtos e Serviços_5472841027515563079
 Título: Produtos e Serviços - Documento 1 - Chunk 1
 Categoria: Produtos e Serviços
-Tamanho: 128 caracteres
-Metadados extras: {'chunk_index': 0, 'file_path': 'conteudo_ficticio\\09_Produtos_e_Serviços__Documento_1.txt', 'total_chunks': 1, 'source_file': '09_Produtos_e_Serviços__Documento_1.txt'}
+Tamanho: 270 caracteres
+Metadados extras: {'file_path': 'conteudo_ficticio\\09_Produtos_e_Serviços__Documento_1.txt', 'source_file': '09_Produtos_e_Serviços__Documento_1.txt', 'chunk_index': 0, 'total_chunks': 1}
 --------------------------------------------------
-cliente antecipar fgts projeto pessoal dívida oferecemos crédito pessoal taxa 1,5 financiamento veículo fazer entrada pequeno 20
+Título: Produtos e Serviços - Documento 1 Categoria: Produtos e Serviços
+
+Clientes podem antecipar o FGTS para projetos pessoais ou dívidas. Oferecemos crédito pessoal com taxas a partir de 1,5% ao mês. Financiamento de veículos pode ser feito com entrada mínima de 20%.
 ============================================================
 
 --- DOCUMENTO 10 ---
-ID: Produtos e Serviços_-8277384176205529471
+ID: Produtos e Serviços_-990175758640734376
 Título: Produtos e Serviços - Documento 2 - Chunk 1
 Categoria: Produtos e Serviços
-Tamanho: 155 caracteres
-Metadados extras: {'file_path': 'conteudo_ficticio\\10_Produtos_e_Serviços__Documento_2.txt', 'total_chunks': 1, 'source_file': '10_Produtos_e_Serviços__Documento_2.txt', 'chunk_index': 0}
+Tamanho: 277 caracteres
+Metadados extras: {'file_path': 'conteudo_ficticio\\10_Produtos_e_Serviços__Documento_2.txt', 'source_file': '10_Produtos_e_Serviços__Documento_2.txt', 'total_chunks': 1, 'chunk_index': 0}
 --------------------------------------------------
-cartão consignar destinar aposentado servidor público cliente acompanhar etapa processo svi portal parcelamento ajustável conforme perfil pagamento cliente
+Título: Produtos e Serviços - Documento 2 Categoria: Produtos e Serviços O cartão consignado é destinado a aposentados e servidores públicos. O cliente pode acompanhar todas as etapas do processo via portal. Parcelamentos são ajustáveis conforme perfil de pagamento do cliente.
 ============================================================
 
 --- DOCUMENTO 11 ---
-ID: Produtos e Serviços_-2798576036816163225
+ID: Produtos e Serviços_-2733520123146628111
 Título: Produtos e Serviços - Documento 3 - Chunk 1
 Categoria: Produtos e Serviços
-Tamanho: 225 caracteres
-Metadados extras: {'file_path': 'conteudo_ficticio\\11_Produtos_e_Serviços__Documento_3.txt', 'chunk_index': 0, 'source_file': '11_Produtos_e_Serviços__Documento_3.txt', 'total_chunks': 1}
+Tamanho: 290 caracteres
+Metadados extras: {'chunk_index': 0, 'total_chunks': 1, 'file_path': 'conteudo_ficticio\\11_Produtos_e_Serviços__Documento_3.txt', 'source_file': '11_Produtos_e_Serviços__Documento_3.txt'}
 --------------------------------------------------
-aprovação depender análise automatizado posterior confirmação humano frase genérico semântico 1234567890 produto suporte via chat telefone atendimento presencial produto possuir requisito específico elegibilidade documentação
+Título: Produtos e Serviços - Documento 3 Categoria: Produtos e Serviços A aprovação depende de análise automatizada e posterior confirmação humana. Produtos têm suporte via chat, telefone e atendimento presencial. Cada produto possui requisitos específicos de elegibilidade e documentação.
 ============================================================
 
 --- DOCUMENTO 12 ---
-ID: Produtos e Serviços_8979250351635097437
+ID: Produtos e Serviços_6029572878550311613
 Título: Produtos e Serviços - Documento 4 - Chunk 1
 Categoria: Produtos e Serviços
-Tamanho: 130 caracteres
-Metadados extras: {'source_file': '12_Produtos_e_Serviços__Documento_4.txt', 'total_chunks': 1, 'chunk_index': 0, 'file_path': 'conteudo_ficticio\\12_Produtos_e_Serviços__Documento_4.txt'}
+Tamanho: 258 caracteres
+Metadados extras: {'chunk_index': 0, 'source_file': '12_Produtos_e_Serviços__Documento_4.txt', 'total_chunks': 1, 'file_path': 'conteudo_ficticio\\12_Produtos_e_Serviços__Documento_4.txt'}
 --------------------------------------------------
-oferecemos cashback compra cartão crédito contratação produto totalmente digital seguro simulações fazer online aplicativo oficial
+Título: Produtos e Serviços - Documento 4 Categoria: Produtos e Serviços
+
+Oferecemos cashback em compras com o cartão de crédito próprio. A contratação dos produtos é totalmente digital e segura. Simulações podem ser feitas online ou pelo aplicativo oficial.
 ============================================================
 
 --- DOCUMENTO 13 ---
-ID: Segurança da Informação_4685275338412659395
+ID: Segurança da Informação_-819457190374855082
 Título: Segurança da Informação - Documento 1 - Chunk 1
 Categoria: Segurança da Informação
-Tamanho: 176 caracteres
-Metadados extras: {'total_chunks': 1, 'chunk_index': 0, 'source_file': '13_Segurança_da_Informação__Documento_1.txt', 'file_path': 'conteudo_ficticio\\13_Segurança_da_Informação__Documento_1.txt'}
+Tamanho: 334 caracteres
+Metadados extras: {'source_file': '13_Segurança_da_Informação__Documento_1.txt', 'file_path': 'conteudo_ficticio\\13_Segurança_da_Informação__Documento_1.txt', 'total_chunks': 1, 'chunk_index': 0}
 --------------------------------------------------
-empresa cumprir exigência lgpd processo relatório segurança enviar mensalmente diretoria frase genérico semântico 1234567890 treinamentos segurança informação realizar semestre
+Título: Segurança da Informação - Documento 1 Categoria: Segurança da Informação A empresa cumpre todas as exigências da LGPD em seus processos. Relatórios de segurança são enviados mensalmente à diretoria. Esta linha não tem relação com o conteúdo da categoria. Treinamentos de segurança da informação são realizados a cada semestre.
 ============================================================
 
 --- DOCUMENTO 14 ---
-ID: Segurança da Informação_-6838128770877532394
+ID: Segurança da Informação_-7163899663035616558
 Título: Segurança da Informação - Documento 2 - Chunk 1
 Categoria: Segurança da Informação
-Tamanho: 181 caracteres
-Metadados extras: {'chunk_index': 0, 'source_file': '14_Segurança_da_Informação__Documento_2.txt', 'total_chunks': 1, 'file_path': 'conteudo_ficticio\\14_Segurança_da_Informação__Documento_2.txt'}
+Tamanho: 275 caracteres
+Metadados extras: {'total_chunks': 1, 'file_path': 'conteudo_ficticio\\14_Segurança_da_Informação__Documento_2.txt', 'source_file': '14_Segurança_da_Informação__Documento_2.txt', 'chunk_index': 0}
 --------------------------------------------------
-bloqueiar acesso 5 tentativa login incorreto equipe ti monitoro registrar acesso suspeito 24/7 frase genérico semântico 1234567890 dispositivo corporativo conter antivírus homologar
+Título: Segurança da Informação - Documento 2 Categoria: Segurança da Informação O sistema bloqueia acessos após 5 tentativas de login incorretas. A equipe de TI monitora e registra acessos suspeitos 24/7. Todos os dispositivos corporativos devem conter antivírus homologado.
 ============================================================
 
 --- DOCUMENTO 15 ---
-ID: Segurança da Informação_2313316440733012308
+ID: Segurança da Informação_-1655101326904060324
 Título: Segurança da Informação - Documento 3 - Chunk 1
 Categoria: Segurança da Informação
-Tamanho: 162 caracteres
-Metadados extras: {'file_path': 'conteudo_ficticio\\15_Segurança_da_Informação__Documento_3.txt', 'chunk_index': 0, 'source_file': '15_Segurança_da_Informação__Documento_3.txt', 'total_chunks': 1}
+Tamanho: 277 caracteres
+Metadados extras: {'chunk_index': 0, 'file_path': 'conteudo_ficticio\\15_Segurança_da_Informação__Documento_3.txt', 'total_chunks': 1, 'source_file': '15_Segurança_da_Informação__Documento_3.txt'}
 --------------------------------------------------
-autenticação fator obrigatório acesso sensível senhas conter 12 caracter símbolo especial frase genérico semântico 1234567890 incidentes segurança reportar 2 hora
+Título: Segurança da Informação - Documento 3 Categoria: Segurança da Informação A autenticação em dois fatores é obrigatória para acessos sensíveis. Senhas devem conter pelo menos 12 caracteres e símbolos especiais. Incidentes de segurança devem ser reportados em até 2 horas.
 ============================================================
 
 --- DOCUMENTO 16 ---
-ID: Segurança da Informação_2819726637504533803
+ID: Segurança da Informação_-4459293946728003352
 Título: Segurança da Informação - Documento 4 - Chunk 1
 Categoria: Segurança da Informação
-Tamanho: 100 caracteres
-Metadados extras: {'chunk_index': 0, 'total_chunks': 1, 'file_path': 'conteudo_ficticio\\16_Segurança_da_Informação__Documento_4.txt', 'source_file': '16_Segurança_da_Informação__Documento_4.txt'}
+Tamanho: 300 caracteres
+Metadados extras: {'total_chunks': 1, 'chunk_index': 0, 'file_path': 'conteudo_ficticio\\16_Segurança_da_Informação__Documento_4.txt', 'source_file': '16_Segurança_da_Informação__Documento_4.txt'}
 --------------------------------------------------
-backups realizar diariamente servidor nuvem seguro sistema utilizar criptografia ponta ponta aes-256
+Título: Segurança da Informação - Documento 4 Categoria: Segurança da Informação
+
+Informação irrelevante: Backups são realizados diariamente em servidores em nuvem seguros. Todos os sistemas utilizam criptografia de ponta a ponta (AES-256).
+
+É proibido o uso de e-mail pessoal para fins corporativos.
 ============================================================
 
 --- DOCUMENTO 17 ---
-ID: Compliance_7767135782709978233
+ID: Compliance_-7191594097705801456
 Título: Compliance - Documento 1 - Chunk 1
 Categoria: Compliance
-Tamanho: 194 caracteres
-Metadados extras: {'chunk_index': 0, 'total_chunks': 1, 'file_path': 'conteudo_ficticio\\17_Compliance__Documento_1.txt', 'source_file': '17_Compliance__Documento_1.txt'}
+Tamanho: 234 caracteres
+Metadados extras: {'source_file': '17_Compliance__Documento_1.txt', 'chunk_index': 0, 'file_path': 'conteudo_ficticio\\17_Compliance__Documento_1.txt', 'total_chunks': 1}
 --------------------------------------------------
-fornecedores passar processo due diligence contratação política compliance garantir conformidade lei regulamento interno texto aleatório inserir ruído teste canal ética funcionar 24 hora dia dia
+Categoria: Compliance
+
+Fornecedores passam por processos de due diligence antes da contratação. A política de compliance garante conformidade com leis e regulamentos internos. O canal de ética funciona 24 horas por dia, todos os dias.
 ============================================================
 
 --- DOCUMENTO 18 ---
-ID: Compliance_-5032767410086600987
+ID: Compliance_3637629531261096086
 Título: Compliance - Documento 2 - Chunk 1
 Categoria: Compliance
-Tamanho: 160 caracteres
-Metadados extras: {'total_chunks': 1, 'chunk_index': 0, 'file_path': 'conteudo_ficticio\\18_Compliance__Documento_2.txt', 'source_file': '18_Compliance__Documento_2.txt'}
+Tamanho: 203 caracteres
+Metadados extras: {'chunk_index': 0, 'total_chunks': 1, 'file_path': 'conteudo_ficticio\\18_Compliance__Documento_2.txt', 'source_file': '18_Compliance__Documento_2.txt'}
 --------------------------------------------------
-conflito interesse comunicar imediatamente gestor infrações ético avaliar comitê compliance caso corrupção tratar tolerância frase genérico semântico 1234567890
+Categoria: Compliance
+
+Conflitos de interesse devem ser comunicados imediatamente ao gestor. Infrações éticas são avaliadas pelo comitê de compliance. Casos de corrupção são tratados com tolerância zero.
 ============================================================
 
 --- DOCUMENTO 19 ---
-ID: Compliance_-4030285630458732345
+ID: Compliance_1795858520541991328
 Título: Compliance - Documento 3 - Chunk 1
 Categoria: Compliance
-Tamanho: 154 caracteres
-Metadados extras: {'source_file': '19_Compliance__Documento_3.txt', 'total_chunks': 1, 'chunk_index': 0, 'file_path': 'conteudo_ficticio\\19_Compliance__Documento_3.txt'}
+Tamanho: 196 caracteres
+Metadados extras: {'total_chunks': 1, 'file_path': 'conteudo_ficticio\\19_Compliance__Documento_3.txt', 'chunk_index': 0, 'source_file': '19_Compliance__Documento_3.txt'}
 --------------------------------------------------
-registro documento armazenar conforme norma cvm empresa atuar conformidade diretriz banco central treinamentos integridade obrigatório realizar anualmente
+Registros e documentos são armazenados conforme normas da CVM. A empresa atua em conformidade com diretrizes do Banco Central. Treinamentos de integridade são obrigatórios e realizados anualmente.
 ============================================================
 
 --- DOCUMENTO 20 ---
-ID: Compliance_-3845294538762117978
+ID: Compliance_2645714685597967909
 Título: Compliance - Documento 4 - Chunk 1
 Categoria: Compliance
-Tamanho: 160 caracteres
-Metadados extras: {'total_chunks': 1, 'chunk_index': 0, 'source_file': '20_Compliance__Documento_4.txt', 'file_path': 'conteudo_ficticio\\20_Compliance__Documento_4.txt'}
+Tamanho: 215 caracteres
+Metadados extras: {'chunk_index': 0, 'total_chunks': 1, 'file_path': 'conteudo_ficticio\\20_Compliance__Documento_4.txt', 'source_file': '20_Compliance__Documento_4.txt'}
 --------------------------------------------------
-colaborador assinar código ética contratação auditoria interno realizar semestralmente equipe independente existe canal denúncia anônimo disponível site oficial
+Todos os colaboradores assinam o código de ética no momento da contratação. Auditorias internas são realizadas semestralmente por equipe independente. Existe um canal de denúncias anônimo disponível no site oficial.
 ============================================================

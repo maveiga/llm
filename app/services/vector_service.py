@@ -39,7 +39,7 @@ class VectorService:
         query_embedding = self.embedding_model.encode([query])[0].tolist()
         
         where_filter = None
-        if category_filter:
+        if category_filter and category_filter != "string":
             where_filter = {"category": category_filter}
         
         results = self.collection.query(
@@ -49,15 +49,16 @@ class VectorService:
         )
         
         documents = []
-        for i, doc_id in enumerate(results['ids'][0]):
-            documents.append(DocumentResponse(
-                id=doc_id,
-                title=results['metadatas'][0][i]['title'],
-                category=results['metadatas'][0][i]['category'],
-                content=results['documents'][0][i],
-                metadata=results['metadatas'][0][i],
-                similarity_score=1 - results['distances'][0][i] if 'distances' in results else None
-            ))
+        if results['ids'] and results['ids'][0]:
+            for i, doc_id in enumerate(results['ids'][0]):
+                documents.append(DocumentResponse(
+                    id=doc_id,
+                    title=results['metadatas'][0][i]['title'],
+                    category=results['metadatas'][0][i]['category'],
+                    content=results['documents'][0][i],
+                    metadata=results['metadatas'][0][i],
+                    similarity_score=1 - results['distances'][0][i] if 'distances' in results else None
+                ))
         
         return documents
     

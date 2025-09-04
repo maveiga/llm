@@ -6,4 +6,18 @@ sentence-transformers
 python-multipart
 pydantic-settings
 spacy #python -m spacy download pt_core_news_lg
-numpy
+numpy==1.26.4
+torch
+transformers
+openai
+langchain-openai
+ragas>=0.1.0
+datasets>=2.14.0
+sqlalchemy
+aiosqlite
+arize-phoenix>=4.0.0
+openinference-instrumentation-langchain>=0.1.0
+openinference-instrumentation-openai>=0.1.0
+openinference-semantic-conventions>=0.1.0
+opentelemetry-api
+opentelemetry-sdk

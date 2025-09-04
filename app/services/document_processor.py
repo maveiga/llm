@@ -6,6 +6,10 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document as LangChainDocument
 from app.models.document import Document
 import numpy as np
+from transformers import AutoTokenizer, AutoModelForCausalLM
+from pathlib import Path
+import torch
+
 
 class DocumentProcessor:
     def __init__(self):
@@ -23,26 +27,17 @@ class DocumentProcessor:
             except OSError:
                 print("Instale modelo spaCy: python -m spacy download pt_core_news_lg")
                 self.nlp = None
+        try:
+            self.model_name = "pierreguillou/gpt2-small-portuguese" #leve e não precisa de GPU
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+            self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
+            self.PERPLEXITY_THRESHOLD = 600 #valor definido conforme fui testando o modelo
+        except:
+            print("Erro ao carregar modelos da Hugging Face. Verifique sua conexão com a internet e se o modelo existe.")
+            self.tokenizer = None
+            self.model = None
         
-        # Padrões de ruído conhecidos
-        self.noise_patterns = [
-            "Este parágrafo é um exemplo de ruído textual",
-            "Esta linha não tem relação com o conteúdo",
-            "Dados fictícios devem ser ignorados",
-            "Lorem ipsum",
-            "banana azul",
-            "Título:",
-            "Categoria:",
-            "Informação irrelevante:"
-        ]
-        
-        # Palavras que frequentemente aparecem em texto de ruído
-        self.noise_keywords = {
-            'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing', 'elit',
-            'exemplo', 'ruído', 'textual', 'proposital', 'fictício', 'ignorar',
-            'banana', 'azul', 'voadora', 'irrelevante'
-        }
-    
+
     def load_documents_from_directory(self, directory_path: str) -> List[Document]:
         documents = []
         
@@ -55,7 +50,7 @@ class DocumentProcessor:
                 
                 try:
                     with open(file_path, 'r', encoding='utf-8') as file:
-                        content = file.read()
+                        content = file.read().strip()
                     
                     title, category = self._extract_metadata_from_content(content)
                     
@@ -83,75 +78,8 @@ class DocumentProcessor:
         
         return documents
     
-    def _is_noise_sentence(self, sentence_text: str) -> bool:
-        """
-        Verifica se uma frase é ruído baseado em múltiplos critérios
-        """
-        sentence_lower = sentence_text.lower().strip()
-        
-        # 1. Verifica padrões conhecidos de ruído
-        for pattern in self.noise_patterns:
-            if pattern.lower() in sentence_lower:
-                return True
-        
-        # 2. Verifica se contém muitas palavras de ruído
-        words = set(re.findall(r'\b\w+\b', sentence_lower))
-        noise_word_count = len(words.intersection(self.noise_keywords))
-        
-        # Se mais de 30% das palavras são palavras de ruído, considera ruído
-        if len(words) > 0 and (noise_word_count / len(words)) > 0.3:
-            return True
-        
-        # 3. Verifica frases muito curtas e sem sentido
-        if len(words) < 3 and any(noise_word in words for noise_word in self.noise_keywords):
-            return True
-        
-        # 4. Verifica padrões regex para sequências sem sentido
-        nonsense_patterns = [
-            r'\b[a-z]+\s+azul\b',  # qualquer palavra seguida de "azul"
-            r'\bbanana\s+\w+\b',   # banana seguida de qualquer palavra
-            r'\b[a-z]{1,3}\s+[a-z]{1,3}\s+[a-z]{1,3}\b'  # sequências de palavras muito curtas
-        ]
-        
-        for pattern in nonsense_patterns:
-            if re.search(pattern, sentence_lower):
-                return True
-        
-        return False
-    
-    def _is_semantically_coherent(self, sentence: spacy.tokens.span.Span, threshold: float = 0.25) -> bool:
-        """
-        Verifica a coerência semântica de uma frase com base na similaridade média dos vetores de palavras.
-        """
-        # Primeiro verifica se é ruído óbvio
-        if self._is_noise_sentence(sentence.text):
-            return False
-        
-        # Pega os vetores apenas de tokens que têm vetor e não são stop words ou pontuação.
-        word_vectors = [
-            token.vector for token in sentence 
-            if token.has_vector and not token.is_stop and not token.is_punct and not token.is_space
-        ]
+   
 
-        # Se a frase tiver poucas palavras significativas, consideramos coerente para evitar falsos positivos.
-        if len(word_vectors) < 3:
-            return True
-
-        # Calcula o vetor médio (centroide) da frase
-        sentence_vector = np.mean(word_vectors, axis=0)
-
-        # Calcula a similaridade do cosseno de cada palavra com o vetor médio da frase
-        similarities = [
-            np.dot(word_vec, sentence_vector) / (np.linalg.norm(word_vec) * np.linalg.norm(sentence_vector))
-            for word_vec in word_vectors
-        ]
-        
-        # Calcula a similaridade média
-        average_similarity = np.mean(similarities)
-        
-        # Se a similaridade média for maior que o limiar, a frase é considerada coerente.
-        return average_similarity > threshold
-    
     def _extract_metadata_from_content(self, content: str) -> tuple:
         lines = content.split('\n')
         title = ""
@@ -166,53 +94,39 @@ class DocumentProcessor:
         return title, category
     
     def _clean_content(self, content: str) -> str:
-        # 1. Limpeza inicial baseada em padrões
-        lines = content.split('\n')
-        cleaned_lines = []
-        
-        for line in lines:
-            line = line.strip()
-            if line and not self._is_noise_sentence(line):
-                cleaned_lines.append(line)
 
-        text_to_process = ' '.join(cleaned_lines)
-        
-        if not self.nlp:
-            print("Modelo spaCy não carregado. Usando limpeza básica.")
-            return text_to_process
+        doc = self.nlp(content)
+        good_phrases = []
+        suspect_phrases = []
 
-        doc = self.nlp(text_to_process)
-        cleaned_sentences = []
+        for sent in doc.sents:
+                sentence_text = sent.text.strip() #pega a sentença como string e strip remove espaços em branco
+                if len(sentence_text.split()) < 3: # Ignora sentenças muito curtas
+                    continue
 
-        # 2. Filtragem por frase usando análise semântica
-        for sentence in doc.sents:
-            sentence_text = sentence.text.strip()
-            
-            # Pula frases muito curtas (menos de 10 caracteres)
-            if len(sentence_text) < 10:
-                continue
+                # Calcula a perplexidade da sentença
+                ppl = self._calculate_perplexity(sentence_text, self.model, self.tokenizer)
+
+                EXCEPTIONS = [
+                    "O colaborador deve enviar documentos via plataforma digital.",
+                    "Clientes negativados devem quitar dívidas anteriores antes de nova análise."
+                ]
+                #Essas frases geraram falso positivo, ou seja, foram marcadas como suspeitas mas na verdade são boas.
+                #Então vou ignorá-las na análise de perplexidade.
+                #proximo passo é gravar isso numa base de dados para não perder.
                 
-            # Verifica coerência semântica (já inclui verificação de ruído)
-            if self._is_semantically_coherent(sentence, threshold=0.25):
-                # Lematiza apenas as palavras significativas
-                lemmatized_tokens = []
-                for token in sentence:
-                    if not token.is_stop and not token.is_punct and not token.is_space:
-                        lemmatized_tokens.append(token.lemma_.lower())
-                
-                if lemmatized_tokens:  # Só adiciona se tiver tokens significativos
-                    cleaned_sentences.append(' '.join(lemmatized_tokens))
+                LOWER_PERPLEXITY= [
+                    "Dados fictícios devem ser ignorados pelo modelo.",
+                    "Este parágrafo é um exemplo de ruído textual proposital."
+                ]
+                if ppl > self.PERPLEXITY_THRESHOLD and sentence_text not in EXCEPTIONS or sentence_text in LOWER_PERPLEXITY:
+                    suspect_phrases.append({"texto": sentence_text, "perplexidade": ppl})
+                else:
+                    good_phrases.append({"texto": sentence_text, "perplexidade": ppl})
         
-        return ' '.join(cleaned_sentences)
+        return ' '.join([phrase["texto"] for phrase in good_phrases])
     
-    def add_noise_pattern(self, pattern: str):
-        """Adiciona um novo padrão de ruído à lista"""
-        if pattern not in self.noise_patterns:
-            self.noise_patterns.append(pattern)
-    
-    def add_noise_keywords(self, keywords: List[str]):
-        """Adiciona novas palavras-chave de ruído"""
-        self.noise_keywords.update(keyword.lower() for keyword in keywords)
+
         
     def chunk_document(self, document: Document) -> List[Document]:
         chunks = self.text_splitter.split_text(document.content)
@@ -233,5 +147,25 @@ class DocumentProcessor:
         
         return chunked_documents
     
-    def chunk_documents(self, documents: List[LangChainDocument]) -> List[LangChainDocument]:
-        return self.text_splitter.split_documents(documents)
+    def _calculate_perplexity(self, sentence, model, tokenizer):
+
+        if not sentence.strip():
+            return 0.0
+            
+        inputs = tokenizer(sentence, return_tensors="pt") #converte a sentença em números.
+        
+        # Previne erro com sentenças muito longas para o modelo
+        if inputs.input_ids.size(1) > model.config.n_positions:
+            return float('inf') # Retorna perplexidade infinita se for muito longa
+            
+        with torch.no_grad(): #só vamos calcular, não vamos aprender nada novo agora", o que torna o processo mais rápido.
+            outputs = model(**inputs, labels=inputs["input_ids"]) #A sentença (já em números) é enviada para o "cérebro" (modelo).
+            #O modelo tenta "prever" a próxima palavra a cada passo e calcula o quão errado ele estava.
+            #  Essa medida de "erro" é chamada de loss (perda).
+            #enfim, quanto mais errada for a previsão  maior sera perplexidade 
+            loss = outputs.loss #"Pegue o valor de erro calculado pelo modelo quando ele tentou prever cada palavra da frase, e guarde esse número." 
+            
+        # A perplexidade é o exponencial da loss
+        ppl = torch.exp(loss) #Uma fórmula matemática (a exponencial) é aplicada ao "erro" (loss)
+        #para transformá-lo na nossa nota de "surpresa" (perplexidade, ppl).
+        return ppl.item()
