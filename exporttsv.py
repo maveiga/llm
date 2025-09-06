@@ -13,12 +13,14 @@ def export_for_embedding_projector():
 
         embeddings_file = os.path.join(output_dir, "embeddings.tsv")
         metadata_file = os.path.join(output_dir, "metadata.tsv")
+        labels_file = os.path.join(output_dir, "labels.tsv")  # Arquivo específico para títulos
 
         print("Conectando ao ChromaDB...")
         client = chromadb.PersistentClient(path=settings.chroma_persist_directory)
         collection = client.get_or_create_collection(name=settings.chroma_collection_name)
 
-        print(f"Exportando da coleção: {collection.name}")
+        print(f"Exportando da colecao: {collection.name}")
+        print(f"Total de documentos na colecao: {collection.count()}")
 
         # Buscar dados (pode ser pesado se tiver muitos registros)
         data = collection.get(include=["embeddings", "documents", "metadatas"])
@@ -43,8 +45,20 @@ def export_for_embedding_projector():
         print(f"Salvando embeddings em {embeddings_file} ...")
         np.savetxt(embeddings_file, embeddings_array, delimiter="\t")
 
-        # Salvar metadados em TSV
-        print(f"Salvando metadata em {metadata_file} ...")
+        # Salvar arquivo de labels (apenas títulos) para TensorFlow Projector
+        print(f"Salvando labels (titulos) em {labels_file} ...")
+        with open(labels_file, "w", encoding="utf-8") as f:
+            for i, metadata in enumerate(metadatas):
+                if metadata and 'title' in metadata:
+                    # Usar título do metadata
+                    title = str(metadata['title']).replace("\t", " ").replace("\n", " ")
+                else:
+                    # Fallback: usar índice se não tiver título
+                    title = f"Documento_{i}"
+                f.write(title + "\n")
+
+        # Salvar metadados completos em TSV
+        print(f"Salvando metadata completa em {metadata_file} ...")
         with open(metadata_file, "w", encoding="utf-8") as f:
             # Escrever cabeçalho se houver metadados
             if metadatas and len(metadatas) > 0:
@@ -71,8 +85,16 @@ def export_for_embedding_projector():
                 
                 f.write("\t".join(line_parts) + "\n")
 
-        print("Exportação concluída!")
-        print(f"Arquivos prontos na pasta: {output_dir}")
+        print("Exportacao concluida!")
+        print(f"Arquivos gerados na pasta: {output_dir}")
+        print("\nComo usar no TensorFlow Projector (https://projector.tensorflow.org/):")
+        print("1. Upload 'embeddings.tsv' como Embeddings")
+        print("2. Upload 'labels.tsv' como Labels (mostrara titulos)")
+        print("3. Upload 'metadata.tsv' como Metadata (dados completos)")
+        print("\nNo Projector:")
+        print("   - 'Label by' -> 'index' mostrara os titulos dos documentos")
+        print("   - 'Color by' -> escolha categoria ou outros campos")
+        print("   - Use T-SNE ou UMAP para visualizacao 2D/3D")
 
     except Exception as e:
         # CORREÇÃO: Remover caracteres Unicode que causam erro de encoding

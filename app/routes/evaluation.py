@@ -1,3 +1,7 @@
+# EVALUATION ROUTES - Interface HTTP para Avaliação RAGAS
+# Route é responsável apenas por HTTP: validação, serialização, tratamento de erros
+# Toda lógica de avaliação e relatórios fica no EvaluationController
+
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from typing import List, Optional, Dict, Any
 from app.models.rag_interaction import (
@@ -5,6 +9,7 @@ from app.models.rag_interaction import (
     UserFeedback, 
     RAGASEvaluation
 )
+from app.controllers.evaluation_controller import EvaluationController, EvaluationBusinessException
 from app.services.ragas_service import ragas_service
 from app.services.database_service import AsyncSessionLocal
 from app.services.phoenix_service import phoenix_service
@@ -13,6 +18,7 @@ from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/evaluation", tags=["evaluation"])
+evaluation_controller = EvaluationController()
 
 async def get_db():
     async with AsyncSessionLocal() as session:
@@ -20,55 +26,69 @@ async def get_db():
 
 @router.post("/ragas/evaluate")
 async def run_ragas_evaluation(
-    evaluation_request: RAGASEvaluation,
-    background_tasks: BackgroundTasks
+    background_tasks: BackgroundTasks,
+    evaluation_request: RAGASEvaluation = Depends(lambda: RAGASEvaluation())
 ) -> Dict[str, Any]:
     """
-    Executa avaliação RAGAS em um conjunto de interações
+    ENDPOINT RAGAS: Executa avaliação de qualidade em interações RAG
+    
+    RESPONSABILIDADES DA ROUTE:
+    - Validação de parâmetros HTTP
+    - Chamada para controller (lógica RAGAS)  
+    - Tratamento de background tasks
+    - Serialização da resposta
+    - Tratamento de exceções HTTP
     
     Args:
-        evaluation_request: Parâmetros da avaliação
-        background_tasks: Para executar a avaliação em background
+        evaluation_request: Parâmetros da avaliação RAGAS
+        background_tasks: Para execução em background (futuro)
     
     Returns:
-        Dict com resultados da avaliação RAGAS
+        Dict com resultados detalhados da avaliação RAGAS
+        
+    Raises:
+        HTTPException: Para erros HTTP (400, 404, 500)
     """
     try:
-        # Se não foram fornecidos IDs específicos, pegar as últimas interações
-        if not evaluation_request.interaction_ids:
-            async with AsyncSessionLocal() as session:
-                query = select(RAGInteractionDB).order_by(
-                    desc(RAGInteractionDB.timestamp)
-                ).limit(50)
-                
-                result = await session.execute(query)
-                interactions = result.scalars().all()
-                
-                if not interactions:
-                    raise HTTPException(
-                        status_code=404, 
-                        detail="Nenhuma interação encontrada para avaliar"
-                    )
-                
-                evaluation_request.interaction_ids = [i.id for i in interactions]
-        
-        # Executar avaliação
-        results = await ragas_service.evaluate_interactions(
-            interaction_ids=evaluation_request.interaction_ids
+        # CHAMA CONTROLLER: toda lógica RAGAS está lá
+        evaluation_results = await evaluation_controller.execute_ragas_evaluation(
+            evaluation_request,
+            background_execution=False  # Por enquanto, execução síncrona
         )
         
-        if "error" in results:
-            raise HTTPException(status_code=400, detail=results["error"])
+        # VERIFICAR SE HOUVE ERRO DE NEGÓCIO
+        if evaluation_results.get("evaluation_status") == "error":
+            error_details = evaluation_results.get("error_details", {})
+            error_code = error_details.get("error_code", "UNKNOWN")
+            
+            if error_code == "NO_INTERACTIONS":
+                raise HTTPException(status_code=404, detail=error_details.get("message"))
+            elif error_code in ["TOO_MANY_INTERACTIONS", "INVALID_INTERACTION_IDS"]:
+                raise HTTPException(status_code=400, detail=error_details.get("message"))
+            else:
+                raise HTTPException(status_code=500, detail=error_details.get("message"))
         
+        # SUCESSO: resposta enriquecida com métricas de negócio
+        print(evaluation_results)
         return {
             "message": "Avaliação RAGAS concluída com sucesso",
-            "evaluation_results": results
+            "evaluation_results": evaluation_results
         }
         
+    except EvaluationBusinessException as e:
+        # Exceções de negócio específicas
+        if e.error_code == "NO_INTERACTIONS":
+            raise HTTPException(status_code=404, detail=e.message)
+        elif e.error_code in ["TOO_MANY_INTERACTIONS", "INVALID_INTERACTION_IDS"]:
+            raise HTTPException(status_code=400, detail=e.message)
+        else:
+            raise HTTPException(status_code=400, detail=e.message)
+            
     except Exception as e:
+        # Erros técnicos inesperados
         raise HTTPException(
-            status_code=500, 
-            detail=f"Erro durante avaliação RAGAS: {str(e)}"
+            status_code=500,
+            detail=f"Erro interno durante avaliação RAGAS: {str(e)}"
         )
 
 @router.get("/ragas/report")

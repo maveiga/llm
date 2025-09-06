@@ -1,50 +1,64 @@
+# CHAT ROUTES - Interface HTTP para Pipeline RAG
+# Route é responsável apenas por HTTP: validação, serialização, tratamento de erros
+# Toda lógica de negócio RAG fica no ChatController
+
 from fastapi import APIRouter, HTTPException
 from app.models.document import QuestionRequest, QuestionResponse
-from app.services.rag_service import RAGService
+from app.controllers.chat_controller import ChatController, ChatBusinessException
 
 router = APIRouter()
-rag_service = RAGService()
+chat_controller = ChatController()
 
 @router.post("/ask", response_model=QuestionResponse)
-async def ask_question(request: QuestionRequest):
+async def ask_question(request: QuestionRequest) -> QuestionResponse:
     """
-    Endpoint RAG: recebe uma pergunta e retorna resposta com citações
+    ENDPOINT RAG: Processa pergunta via pipeline RAG completo
     
-    - **question**: Pergunta do usuário
-    - **max_documents**: Número máximo de documentos para usar como contexto (default: 5)
-    - **category_filter**: Filtro opcional por categoria
+    RESPONSABILIDADES DA ROUTE:
+    - Validação de entrada HTTP
+    - Chamada para controller (lógica RAG)
+    - Serialização da resposta
+    - Tratamento de exceções HTTP
     
-    Retorna:
-    - **answer**: Resposta gerada pelo LLM
-    - **sources**: Lista de fontes citadas
-    - **search_results**: Documentos encontrados na busca vetorial
+    Args:
+        request: Pergunta do usuário com parâmetros de busca
+    
+    Returns:
+        QuestionResponse com resposta gerada, fontes e métricas
+        
+    Raises:
+        HTTPException: Para erros HTTP (400, 500)
     """
     try:
-        response = await rag_service.ask_question(
-            question=request.question,
-            max_documents=request.max_documents,
-            category_filter=request.category_filter
-        )
+        # CHAMA CONTROLLER: toda lógica RAG está lá
+        response = await chat_controller.process_question(request)
         
+        # VERIFICAR SE HOUVE ERRO DE NEGÓCIO
+        if response.get("business_status") == "error":
+            error_details = response.get("error_details", {})
+            error_type = error_details.get("error_type", "UNKNOWN")
+            
+            if error_type == "BUSINESS_ERROR":
+                raise HTTPException(status_code=400, detail=error_details.get("message"))
+            else:
+                raise HTTPException(status_code=500, detail=error_details.get("message"))
+        
+        # SUCESSO: converter para modelo de resposta
         return QuestionResponse(**response)
         
+    except ChatBusinessException as e:
+        # Exceções de negócio específicas (400 Bad Request)
+        if e.error_code in ["EMPTY_QUESTION", "QUESTION_TOO_SHORT", "QUESTION_TOO_LONG"]:
+            raise HTTPException(status_code=400, detail=e.message)
+        elif e.error_code == "INVALID_MAX_DOCUMENTS":
+            raise HTTPException(status_code=400, detail=e.message)
+        else:
+            raise HTTPException(status_code=400, detail=e.message)
+            
     except Exception as e:
+        # Erros técnicos inesperados (500 Internal Server Error)
         raise HTTPException(
-            status_code=500, 
-            detail=f"Erro no pipeline RAG: {str(e)}"
+            status_code=500,
+            detail=f"Erro interno no pipeline RAG: {str(e)}"
         )
 
-@router.get("/health")
-async def health_check():
-    """Verifica se o serviço RAG está funcionando"""
-    try:
-        health = await rag_service.health_check()
-        return {
-            "status": "healthy" if all(health.values()) else "degraded",
-            "services": health
-        }
-    except Exception as e:
-        raise HTTPException(
-            status_code=503,
-            detail=f"Serviço indisponível: {str(e)}"
-        )

@@ -1,5 +1,5 @@
 fastapi
-uvicorn[standard]
+uvicorn
 chromadb
 langchain
 sentence-transformers
@@ -13,6 +13,7 @@ openai
 langchain-openai
 ragas>=0.1.0
 datasets>=2.14.0
+nest_asyncio
 sqlalchemy
 aiosqlite
 arize-phoenix>=4.0.0

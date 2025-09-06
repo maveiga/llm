@@ -1,45 +1,71 @@
-from fastapi import APIRouter, HTTPException
-from app.services.document_processor import DocumentProcessor
-from app.services.vector_service import VectorService
-from langchain.schema import Document as LangChainDocument
-from app.models.document import Document
+# ADMIN ROUTES - Interface HTTP para Operações Administrativas
+# Route é responsável apenas por HTTP: validação, autenticação, serialização
+# Toda lógica de negócio fica no AdminController
+
+from fastapi import APIRouter, HTTPException, Query
+from typing import Optional
+from app.controllers.admin_controller import AdminController, AdminBusinessException
 
 router = APIRouter()
-processor = DocumentProcessor()
-vector_service = VectorService()
+admin_controller = AdminController()
 
 @router.post("/admin/load-documents")
-async def load_documents_from_directory(directory_path: str = "conteudo_ficticio"):
-    try:
-        documents = processor.load_documents_from_directory(directory_path)
+async def load_documents_from_directory(
+    directory_path: str = Query(
+        default="conteudo_ficticio", 
+        description="Caminho para diretório contendo arquivos .txt para indexar"
+    )
+) -> dict:
+    """
+    ENDPOINT ADMINISTRATIVO: Carrega documentos de diretório para o sistema RAG
+    
+    RESPONSABILIDADES DA ROUTE:
+    - Validação de parâmetros HTTP
+    - Chamada para controller (lógica de negócio)
+    - Tratamento de exceções HTTP
+    - Serialização da resposta
+    
+    Args:
+        directory_path: Caminho para diretório com arquivos .txt
         
-        total_chunks = 0
-        for document in documents:
-            chunked_docs = processor.chunk_document(document)
+    Returns:
+        Dict com resultado do carregamento e métricas
+        
+    Raises:
+        HTTPException: Para erros HTTP (400, 404, 500)
+    """
+    try:
+        # CHAMA CONTROLLER: toda lógica de negócio está lá
+        result = await admin_controller.load_documents_from_directory(directory_path)
+        
+        # CONTROLLER RETORNOU ERRO DE NEGÓCIO
+        if not result.get("success", True):
+            # Se é erro de negócio conhecido, retorna 400 (Bad Request)
+            if "DIRECTORY_NOT_FOUND" in result.get("error", ""):
+                raise HTTPException(status_code=404, detail=result["message"])
+            elif "NO_TXT_FILES" in result.get("error", ""):
+                raise HTTPException(status_code=400, detail=result["message"])
+            else:
+                # Erro genérico de processamento
+                raise HTTPException(status_code=500, detail=result["message"])
+        
+        # SUCESSO: retorna resultado do controller
+        return result
+        
+    except AdminBusinessException as e:
+        # Exceções de negócio específicas (400 Bad Request)
+        if e.error_code == "DIRECTORY_NOT_FOUND":
+            raise HTTPException(status_code=404, detail=e.message)
+        elif e.error_code == "NO_TXT_FILES":
+            raise HTTPException(status_code=400, detail=e.message)
+        else:
+            raise HTTPException(status_code=400, detail=e.message)
             
-            for chunk in chunked_docs:
-                await vector_service.add_document(chunk)
-                total_chunks += 1
-        
-        return {
-            "message": f"Successfully loaded {total_chunks} document chunks from {len(documents)} files",
-            "total_files": len(documents),
-            "total_chunks": total_chunks
-        }
-    
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error loading documents: {str(e)}")
+        # Erros técnicos inesperados (500 Internal Server Error)
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Erro interno durante carregamento: {str(e)}"
+        )
 
-@router.get("/admin/collection-info")
-async def get_collection_info():
-    try:
-        collection = vector_service.collection
-        count = collection.count()
-        
-        return {
-            "collection_name": collection.name,
-            "document_count": count
-        }
-    
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error getting collection info: {str(e)}")
+

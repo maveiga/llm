@@ -1,26 +1,45 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from app.routes import documents, search, admin, chat, evaluation
+from app.routes import search, admin, chat, evaluation
 from app.core.config import settings
 from app.services.database_service import database_service
 from app.services.phoenix_service import phoenix_service
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Criar tabelas do banco de dados na inicialização
-    await database_service.create_tables()
+    """Gerencia ciclo de vida da aplicação"""
+    print("🚀 Inicializando aplicação RAG...")
     
-    # Phoenix já é inicializado automaticamente no import
-    if phoenix_service.is_enabled:
-        print(f"🔥 Phoenix dashboard disponível em: {phoenix_service.get_phoenix_url()}")
-    else:
-        print("⚠️  Phoenix não foi inicializado - continuando sem observabilidade")
+    try:
+        # Criar tabelas do banco de dados na inicialização
+        print("📊 Criando tabelas do banco de dados...")
+        await database_service.create_tables()
+        print("✅ Banco de dados inicializado")
+        
+        # Phoenix pode falhar sem quebrar a aplicação
+        if phoenix_service.is_enabled:
+            print(f"🔥 Phoenix dashboard disponível em: {phoenix_service.get_phoenix_url()}")
+        else:
+            print("⚠️  Phoenix não foi inicializado - continuando sem observabilidade")
+        
+        print("🎯 Aplicação RAG inicializada com sucesso!")
+        
+    except Exception as e:
+        print(f"⚠️  Erro durante inicialização: {str(e)}")
+        print("📝 Continuando mesmo com erros de inicialização...")
     
     yield
     
     # Cleanup
-    if phoenix_service.is_enabled:
-        phoenix_service.shutdown()
+    print("🔄 Finalizando aplicação...")
+    try:
+        if phoenix_service.is_enabled:
+            phoenix_service.shutdown()
+            print("🔥 Phoenix finalizado")
+    except Exception as e:
+        print(f"⚠️  Erro durante finalização: {str(e)}")
+    
+    print("👋 Aplicação finalizada")
 
 app = FastAPI(
     title="RAG System with Phoenix Observability + RAGAS Evaluation",
@@ -29,7 +48,6 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-app.include_router(documents.router, prefix="/api/v1", tags=["documents"])
 app.include_router(search.router, prefix="/api/v1", tags=["search"])
 app.include_router(admin.router, prefix="/api/v1", tags=["admin"])
 app.include_router(chat.router, prefix="/api/v1", tags=["chat"])

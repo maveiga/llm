@@ -12,11 +12,22 @@ from typing import Dict, Any, Optional, List
 from datetime import datetime
 
 class PhoenixService:
+    """
+    Serviço de observabilidade Phoenix para sistemas RAG
+    
+    O Phoenix é uma ferramenta que:
+    1. Monitora todas as operações RAG em tempo real
+    2. Visualiza embeddings e clusters de documentos
+    3. Analisa performance e latência
+    4. Detecta anomalias e drift nos dados
+    5. Integra com ferramentas de avaliação como RAGAS
+    """
+    
     def __init__(self):
-        self.session = None
-        self.is_enabled = False
-        self.project_name = "rag-evaluation-system"
-        self.setup_phoenix()
+        self.session = None  # Sessão ativa do Phoenix (interface web)
+        self.is_enabled = False  # Status: Phoenix está funcionando?
+        self.project_name = "rag-evaluation-system"  # Nome do projeto no Phoenix
+        self.setup_phoenix()  # Inicializa tudo automaticamente
     
     def setup_phoenix(self):
         """Configurar e iniciar Phoenix"""

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, List, Dict, Any
 
 class Document(BaseModel):
@@ -22,9 +22,17 @@ class SearchRequest(BaseModel):
     category_filter: Optional[str] = None
 
 class SearchResponse(BaseModel):
+    model_config = ConfigDict(extra='allow')
+    
     query: str
     results: List[DocumentResponse]
     total_results: int
+    
+    # Campos opcionais que podem ser adicionados dinamicamente
+    search_metadata: Optional[Dict[str, Any]] = None
+    quality_analysis: Optional[Dict[str, Any]] = None
+    business_insights: Optional[Dict[str, Any]] = None
+    search_status: Optional[str] = None
 
 # Modelos para o RAG
 class QuestionRequest(BaseModel):

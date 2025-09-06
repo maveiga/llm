@@ -1,19 +1,37 @@
 import aiosqlite
+import warnings
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from app.models.rag_interaction import Base
 from app.core.config import settings
 import os
+import logging
+
+# Suprimir warnings específicos do SQLAlchemy
+warnings.filterwarnings("ignore", message=".*Skipped unsupported reflection.*")
+warnings.filterwarnings("ignore", category=UserWarning, module="sqlalchemy.*")
+
+# Configurar logging SQLAlchemy para reduzir ruído
+logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 
 # SQLite database path
 DATABASE_PATH = os.path.join(settings.chroma_persist_directory, "rag_interactions.db")
 DATABASE_URL = f"sqlite+aiosqlite:///{DATABASE_PATH}"
 
-# Async engine and session
-engine = create_async_engine(DATABASE_URL, echo=False)
+# Async engine and session com configurações otimizadas
+engine = create_async_engine(
+    DATABASE_URL, 
+    echo=False,  # Sem logs SQL
+    future=True,  # Usar SQLAlchemy 2.0 style
+    connect_args={
+        "check_same_thread": False,  # Permitir uso em múltiplas threads
+    }
+)
 AsyncSessionLocal = sessionmaker(
-    engine, class_=AsyncSession, expire_on_commit=False
+    engine, 
+    class_=AsyncSession, 
+    expire_on_commit=False
 )
 
 class DatabaseService:
@@ -31,14 +49,6 @@ class DatabaseService:
         async with AsyncSessionLocal() as session:
             yield session
 
-    async def health_check(self) -> bool:
-        """Verificar se o banco de dados está acessível"""
-        try:
-            async with AsyncSessionLocal() as session:
-                await session.execute("SELECT 1")
-                return True
-        except Exception:
-            return False
 
 # Instância global do serviço de banco de dados
 database_service = DatabaseService()

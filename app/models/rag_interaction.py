@@ -51,5 +51,5 @@ class UserFeedback(BaseModel):
     comment: Optional[str] = None
 
 class RAGASEvaluation(BaseModel):
-    interaction_ids: List[str]
+    interaction_ids: Optional[List[str]] = None
     include_ground_truth: bool = False
