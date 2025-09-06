@@ -57,7 +57,6 @@ class EvaluationController:
             Dict com resultados detalhados da avaliação
         """
         evaluation_start = datetime.now()
-        logger.info(f"🔬 Iniciando avaliação RAGAS: {len(evaluation_request.interaction_ids or [])} interações")
         
         try:
             # ETAPA 1: VALIDAÇÕES DE NEGÓCIO

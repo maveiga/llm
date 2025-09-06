@@ -59,4 +59,22 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
+    import subprocess
+    import spacy
+
+    try:
+        spacy.load("pt_core_news_lg")
+        print("Modelo spaCy já está instalado")
+    except OSError:
+        print("Baixando modelo spaCy pt_core_news_lg")
+        subprocess.run(["python", "-m", "spacy", "download", "pt_core_news_lg"], check=True)
+    
+    # inicia o chroma em paralelo
+    subprocess.Popen([
+        "chroma",
+        "run",
+        "--host", "localhost",
+        "--port", "8001",
+        "--path", "./chroma_data"
+    ])
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

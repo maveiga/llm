@@ -57,57 +57,47 @@ class LLMService:
             Dict com resposta gerada, fontes citadas e metadados
         """
         
-        # ETAPA 1: PREPARAR CONTEXTO DOS DOCUMENTOS
         # Converte documentos encontrados num texto estruturado que GPT entende
         context_text = ""
-        sources = []  # Lista de fontes para citação
+        sources = []
         
         for i, doc in enumerate(context_documents, 1):
-            # Formata cada documento de forma estruturada
             context_text += f"[Documento {i}]\n"
             context_text += f"Título: {doc.get('title', 'N/A')}\n"
             context_text += f"Categoria: {doc.get('category', 'N/A')}\n"
             context_text += f"Conteúdo: {doc.get('content', '')}\n\n"
             
-            # Prepara informações das fontes para citação
             sources.append({
                 "id": i,
                 "title": doc.get('title', 'N/A'),
                 "category": doc.get('category', 'N/A'),
-                "similarity_score": doc.get('similarity_score')  # Quão similar à pergunta (0-1)
+                "similarity_score": doc.get('similarity_score')
             })
         
-        # ETAPA 2: CRIAR PROMPT DO SISTEMA (INSTRUÇÕES PARA O AI)
-        # Este prompt ensina o GPT como ele deve se comportar
         system_prompt = """Você é um assistente especializado que responde perguntas baseado exclusivamente nos documentos fornecidos.
 
-REGRAS IMPORTANTES:
-1. Use APENAS as informações dos documentos fornecidos para responder
-2. Se a pergunta não puder ser respondida com os documentos, diga que não há informações suficientes
-3. Sempre cite as fontes usando [Documento X] no final de cada afirmação
-4. Seja preciso e objetivo - evite invenções ou alucinações
-5. Mantenha um tom profissional
+        REGRAS IMPORTANTES:
+        1. Use APENAS as informações dos documentos fornecidos para responder
+        2. Se a pergunta não puder ser respondida com os documentos, diga que não há informações suficientes
+        3. Sempre cite as fontes usando [Documento X] no final de cada afirmação
+        4. Se possivel cite fontes como titulo e categoria no formato: (titulo - categoria) no final de cada afirmação
+        5. Seja preciso e objetivo - evite invenções ou alucinações
+        6. Mantenha um tom profissional
 
-DOCUMENTOS DISPONÍVEIS PARA CONSULTA:
-{context}"""
+        DOCUMENTOS DISPONÍVEIS PARA CONSULTA:
+        {context}"""
 
-        # ETAPA 3: CRIAR PROMPT DO USUÁRIO (PERGUNTA REAL)
         user_prompt = f"Pergunta: {question}\n\nPor favor, responda baseado exclusivamente nos documentos fornecidos acima."
 
-        # ETAPA 4: PREPARAR MENSAGENS NO FORMATO LANGCHAIN
-        # LangChain usa tipos específicos de mensagem para estruturar a conversa
         messages = [
-            SystemMessage(content=system_prompt.format(context=context_text)),  # Instruções + contexto
-            HumanMessage(content=user_prompt)                                   # Pergunta do usuário
+            SystemMessage(content=system_prompt.format(context=context_text)),
+            HumanMessage(content=user_prompt)                                   
         ]
         
         try:
-            # ETAPA 5: ENVIAR PARA GPT VIA LANGCHAIN E AGUARDAR RESPOSTA
-            # ainvoke = chamada assíncrona para o modelo de linguagem
             response = await self.llm.ainvoke(messages)
-            answer = response.content  # Extrai o texto da resposta
+            answer = response.content
             
-            # ETAPA 6: ESTRUTURAR RESPOSTA FINAL
             return {
                 "answer": answer,                        # Resposta gerada pelo GPT
                 "sources": sources,                      # Fontes citadas
@@ -116,7 +106,6 @@ DOCUMENTOS DISPONÍVEIS PARA CONSULTA:
             }
             
         except Exception as e:
-            # Se der erro (sem internet, API key inválida, etc.)
             return {
                 "answer": f"Erro ao gerar resposta: {str(e)}",
                 "sources": sources,
@@ -124,18 +113,3 @@ DOCUMENTOS DISPONÍVEIS PARA CONSULTA:
                 "question": question,
                 "error": str(e)
             }
-    
-    async def check_connection(self) -> bool:
-        """Verifica se a conexão com a API OpenAI está funcionando
-        
-        Usado para health checks:
-        - Verifica se API key é válida
-        - Testa conectividade
-        - Garante que modelo está disponível
-        """
-        try:
-            # Faz uma chamada simples para testar
-            response = await self.llm.ainvoke([HumanMessage(content="Hello")])
-            return True  # Se chegou até aqui, está funcionando
-        except Exception:
-            return False  # Algo deu errado (sem API key, sem internet, etc.)

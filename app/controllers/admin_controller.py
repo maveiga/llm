@@ -11,23 +11,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class AdminController:
-    """
-    Controller para operações administrativas do sistema RAG
-    
-    RESPONSABILIDADES:
-    - Lógica de negócio para carregamento de documentos
-    - Orquestração entre DocumentProcessor e VectorService
-    - Validações de negócio (diretórios, arquivos)
-    - Processamento de lotes de documentos
-    - Cálculo de métricas de carregamento
-    - Logging de operações administrativas
-    
-    PADRÃO MVC:
-    Route → Controller → Services → Response
-    """
-    
     def __init__(self):
-        # Injeção de dependências: services necessários
         self.document_processor = DocumentProcessor()
         self.vector_service = VectorService()
         
@@ -58,8 +42,6 @@ class AdminController:
             AdminBusinessException: Para erros de negócio específicos
             Exception: Para erros técnicos inesperados
         """
-        logger.info(f"🚀 Iniciando carregamento de documentos de: {directory_path}")
-        
         try:
             # ETAPA 1: VALIDAÇÕES DE NEGÓCIO
             if validate_directory:
@@ -120,7 +102,6 @@ class AdminController:
             }
     
     async def _validate_directory_path(self, directory_path: str) -> None:
-        """Validação de negócio: verifica se diretório é válido para processamento"""
         import os
         
         if not os.path.exists(directory_path):
@@ -135,7 +116,6 @@ class AdminController:
                 error_code="INVALID_DIRECTORY"
             )
         
-        # Verificar se há pelo menos um arquivo .txt
         txt_files = [f for f in os.listdir(directory_path) if f.endswith('.txt')]
         if not txt_files:
             raise AdminBusinessException(
@@ -143,14 +123,11 @@ class AdminController:
                 error_code="NO_TXT_FILES"
             )
         
-        logger.info(f"✅ Diretório validado: {len(txt_files)} arquivos .txt encontrados")
-    
     async def _process_documents_batch(self, documents: List[Document]) -> List[Dict[str, Any]]:
-        """Processa lote de documentos com tracking individual"""
         processing_results = []
         
         for i, document in enumerate(documents, 1):
-            logger.info(f"📄 Processando documento {i}/{len(documents)}: {document.title}")
+            logger.info(f"Processando documento {i}/{len(documents)}: {document.title}")
             
             try:
                 # Dividir documento em chunks
@@ -163,7 +140,6 @@ class AdminController:
                     if chunk_id:
                         chunks_indexed += 1
                 
-                # Resultado do processamento individual
                 result = {
                     "document_title": document.title,
                     "document_category": document.category,
@@ -176,8 +152,7 @@ class AdminController:
                 logger.info(f"✅ {document.title}: {chunks_indexed} chunks indexados")
                 
             except Exception as e:
-                # Log do erro mas continua processando outros documentos
-                logger.error(f"❌ Erro processando {document.title}: {str(e)}")
+                logger.error(f"Erro processando {document.title}: {str(e)}")
                 result = {
                     "document_title": document.title,
                     "document_category": document.category or "unknown",

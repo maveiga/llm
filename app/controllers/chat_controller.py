@@ -50,10 +50,9 @@ class ChatController:
             Dict com resposta enriquecida e metadados de negócio
         """
         session_start = datetime.now()
-        logger.info(f"🤖 Iniciando processamento RAG: '{question_request.question[:50]}...'")
+        logger.info(f"Iniciando processamento RAG: '{question_request.question[:50]}...'")
         
         try:
-            # ETAPA 1: VALIDAÇÕES DE NEGÓCIO
             self._validate_question_request(question_request)
             
             # ETAPA 2: EXECUTAR PIPELINE RAG VIA SERVICE
