@@ -184,44 +184,6 @@ async def list_interactions(
             detail=f"Erro ao listar interações: {str(e)}"
         )
 
-@router.get("/interactions/{interaction_id}")
-async def get_interaction_detail(
-    interaction_id: str,
-    db: AsyncSession = Depends(get_db)
-) -> RAGInteractionResponse:
-    """
-    Obtém detalhes completos de uma interação específica
-    
-    Args:
-        interaction_id: ID da interação
-        db: Sessão do banco de dados
-    
-    Returns:
-        Detalhes completos da interação
-    """
-    try:
-        query = select(RAGInteractionDB).where(
-            RAGInteractionDB.id == interaction_id
-        )
-        
-        result = await db.execute(query)
-        interaction = result.scalar_one_or_none()
-        
-        if not interaction:
-            raise HTTPException(
-                status_code=404, 
-                detail="Interação não encontrada"
-            )
-        
-        return RAGInteractionResponse.from_orm(interaction)
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, 
-            detail=f"Erro ao buscar interação: {str(e)}"
-        )
 
 @router.post("/interactions/{interaction_id}/feedback")
 async def add_user_feedback(
@@ -337,25 +299,4 @@ async def get_evaluation_stats(
         raise HTTPException(
             status_code=500, 
             detail=f"Erro ao obter estatísticas: {str(e)}"
-        )
-
-
-
-
-# Endpoint combinado Phoenix + RAGAS
-@router.get("/combined-report")
-async def get_combined_phoenix_ragas_report() -> Dict[str, Any]:
-    """
-    Gera relatório combinado integrando dados do Phoenix com métricas RAGAS
-    
-    Returns:
-        Dict com análise combinada e recomendações
-    """
-    try:
-        combined_report = await ragas_service.generate_phoenix_ragas_report()
-        return combined_report
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Erro ao gerar relatório combinado: {str(e)}"
         )

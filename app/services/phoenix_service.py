@@ -34,20 +34,37 @@ class PhoenixService:
         try:
             logging.getLogger("phoenix").setLevel(logging.INFO)
             
-            self.session = px.launch_app(
-                port=6006,
-                host="127.0.0.1"
-            )
+            # Detectar se está rodando no Docker
+            is_docker = os.path.exists('/.dockerenv') or os.environ.get('DOCKER_CONTAINER', False)
+            
+            if is_docker:
+                print("🐳 Docker detectado - configurando Phoenix para Docker")
+                # No Docker, precisa usar 0.0.0.0 para ser acessível externamente
+                self.session = px.launch_app(
+                    port=6006,
+                    host="0.0.0.0"  # Permite acesso externo no Docker
+                )
+                print("🔥 Phoenix configurado para Docker!")
+                print("📍 Acesse via: http://localhost:6006 (se port forwarding configurado)")
+                print("📍 Ou via: http://host.docker.internal:6006 (no Windows/Mac)")
+            else:
+                print("🖥️ Ambiente local detectado - configurando Phoenix")
+                # Configuração para ambiente local
+                self.session = px.launch_app(
+                    port=6006,
+                    host="127.0.0.1"
+                )
             
             self._setup_opentelemetry()
             
             self._setup_instrumentation()
             
             self.is_enabled = True
-            print(f"Phoenix iniciado em: {self.session.url}")
+            print(f"🔥 Phoenix iniciado em: {self.session.url}")
             
         except Exception as e:
-            print(f"Erro ao iniciar Phoenix: {str(e)}")
+            print(f"⚠️ Phoenix não pôde ser iniciado: {str(e)}")
+            print("💡 Sistema continuará funcionando sem observabilidade Phoenix")
             self.is_enabled = False
     
     def _setup_opentelemetry(self):
@@ -57,16 +74,27 @@ class PhoenixService:
             tracer_provider = trace_sdk.TracerProvider()
             trace.set_tracer_provider(tracer_provider)
             
-            # Configurar exporter para Phoenix
-            phoenix_endpoint = f"http://127.0.0.1:6006/v1/traces"
+            # Detectar ambiente para configurar endpoint correto
+            is_docker = os.path.exists('/.dockerenv') or os.environ.get('DOCKER_CONTAINER', False)
+            
+            if is_docker:
+                # No Docker, usar localhost interno
+                phoenix_endpoint = f"http://localhost:6006/v1/traces"
+            else:
+                # Local, usar 127.0.0.1
+                phoenix_endpoint = f"http://127.0.0.1:6006/v1/traces"
+            
+            print(f"🔧 OpenTelemetry endpoint: {phoenix_endpoint}")
             exporter = OTLPSpanExporter(endpoint=phoenix_endpoint)
             
             # Configurar span processor
             span_processor = BatchSpanProcessor(exporter)
             tracer_provider.add_span_processor(span_processor)
             
+            print("✅ OpenTelemetry configurado com sucesso")
+            
         except Exception as e:
-            print(f"Erro na configuração OpenTelemetry: {str(e)}")
+            print(f"❌ Erro na configuração OpenTelemetry: {str(e)}")
     
     def _setup_instrumentation(self):
         """Configurar instrumentação automática"""
@@ -89,25 +117,6 @@ class PhoenixService:
         if self.session and self.is_enabled:
             return self.session.url
         return None
-    
-    def get_traces_data(self, limit: int = 100) -> Dict[str, Any]:
-        """Recupera dados de traces do Phoenix"""
-        if not self.is_enabled:
-            return {"error": "Phoenix não está habilitado"}
-        
-        try:
-            # Phoenix oferece APIs para acessar dados de trace
-            # Por enquanto, retornamos informações básicas
-            return {
-                "phoenix_enabled": True,
-                "dashboard_url": self.get_phoenix_url(),
-                "project_name": self.project_name,
-                "traces_available": True,
-                "message": "Acesse o dashboard Phoenix para ver traces detalhados"
-            }
-            
-        except Exception as e:
-            return {"error": f"Erro ao acessar dados de traces: {str(e)}"}
     
     def shutdown(self):
         """Finalizar Phoenix session"""
