@@ -1,0 +1,328 @@
+=== ARQUIVOS RAW COMBINADOS ===
+Data de extração: 2025-09-03 01:02:26
+Total de arquivos: 20
+Diretório origem: conteudo_ficticio
+==================================================
+
+
+--- ARQUIVO 1: 01_Política_de_Crédito__Documento_1.txt ---
+Tamanho: 360 caracteres
+----------------------------------------
+Título: Política de Crédito - Documento 1
+Categoria: Política de Crédito
+
+Empréstimos são concedidos apenas após verificação cadastral completa.
+
+O sistema de crédito é integrado com bureaus externos para validação de informações.
+
+Casos de suspeita de fraude são imediatamente reportados e bloqueados.
+
+Este parágrafo é um exemplo de ruído textual proposital.
+==================================================
+
+--- ARQUIVO 2: 02_Política_de_Crédito__Documento_2.txt ---
+Tamanho: 378 caracteres
+----------------------------------------
+Título: Política de Crédito - Documento 2
+Categoria: Política de Crédito
+
+Análises adicionais podem ser exigidas para clientes com histórico de inadimplência.
+
+A política de crédito define critérios rigorosos para a concessão de empréstimos.
+
+Esta linha não tem relação com o conteúdo da categoria.
+
+Clientes podem solicitar reavaliação de limite após 6 meses de relacionamento.
+==================================================
+
+--- ARQUIVO 3: 03_Política_de_Crédito__Documento_3.txt ---
+Tamanho: 310 caracteres
+----------------------------------------
+Título: Política de Crédito - Documento 3
+Categoria: Política de Crédito
+
+Informação irrelevante: Banana azul voadora.
+
+Clientes negativados devem quitar dívidas anteriores antes de nova análise.
+
+A aprovação final depende do comitê de crédito.
+
+Revisões periódicas são realizadas nos contratos de maior risco.
+==================================================
+
+--- ARQUIVO 4: 04_Política_de_Crédito__Documento_4.txt ---
+Tamanho: 392 caracteres
+----------------------------------------
+Título: Política de Crédito - Documento 4
+Categoria: Política de Crédito
+
+O cliente deve apresentar comprovante de renda e residência atualizados.
+
+Texto aleatório inserido como ruído para teste.
+
+A empresa segue padrões estabelecidos pelo Banco Central do Brasil.
+
+Limites de crédito são definidos com base em renda, score e análise de risco.
+
+Texto aleatório inserido como ruído para teste.
+==================================================
+
+--- ARQUIVO 5: 05_Onboarding__Documento_1.txt ---
+Tamanho: 402 caracteres
+----------------------------------------
+Título: Onboarding - Documento 1
+Categoria: Onboarding
+
+Esta linha não tem relação com o conteúdo da categoria.
+
+Cada novo colaborador recebe um mentor para acompanhamento nos primeiros dias.
+
+O processo de onboarding começa com a coleta de dados pessoais e profissionais.
+
+Dados fictícios devem ser ignorados pelo modelo.
+
+Treinamentos obrigatórios incluem ética, segurança e uso de sistemas internos.
+==================================================
+
+--- ARQUIVO 6: 06_Onboarding__Documento_2.txt ---
+Tamanho: 351 caracteres
+----------------------------------------
+Título: Onboarding - Documento 2
+Categoria: Onboarding
+
+O kit de boas-vindas inclui manual institucional e acesso aos sistemas.
+
+Este parágrafo é um exemplo de ruído textual proposital.
+
+Dúvidas podem ser enviadas via chat interno com o RH.
+
+Frase genérica sem valor semântico: 1234567890.
+
+O colaborador deve enviar documentos via plataforma digital.
+==================================================
+
+--- ARQUIVO 7: 07_Onboarding__Documento_3.txt ---
+Tamanho: 366 caracteres
+----------------------------------------
+Título: Onboarding - Documento 3
+Categoria: Onboarding
+
+Informação irrelevante: Banana azul voadora.
+
+A área de RH realiza reuniões de integração toda segunda-feira.
+
+Esta linha não tem relação com o conteúdo da categoria.
+
+O processo deve ser concluído em até 5 dias úteis após admissão.
+
+A plataforma de onboarding oferece tutoriais interativos sobre os processos.
+==================================================
+
+--- ARQUIVO 8: 08_Onboarding__Documento_4.txt ---
+Tamanho: 367 caracteres
+----------------------------------------
+Título: Onboarding - Documento 4
+Categoria: Onboarding
+
+Pendências documentais impedem a liberação do e-mail corporativo.
+
+Este parágrafo é um exemplo de ruído textual proposital.
+
+Texto aleatório inserido como ruído para teste.
+
+Ao final do onboarding, é aplicada uma avaliação de conhecimento.
+
+O contrato digital é assinado por meio de autenticação em duas etapas.
+==================================================
+
+--- ARQUIVO 9: 09_Produtos_e_Serviços__Documento_1.txt ---
+Tamanho: 322 caracteres
+----------------------------------------
+Título: Produtos e Serviços - Documento 1
+Categoria: Produtos e Serviços
+
+Clientes podem antecipar o FGTS para projetos pessoais ou dívidas.
+
+Oferecemos crédito pessoal com taxas a partir de 1,5% ao mês.
+
+Financiamento de veículos pode ser feito com entrada mínima de 20%.
+
+Dados fictícios devem ser ignorados pelo modelo.
+==================================================
+
+--- ARQUIVO 10: 10_Produtos_e_Serviços__Documento_2.txt ---
+Tamanho: 338 caracteres
+----------------------------------------
+Título: Produtos e Serviços - Documento 2
+Categoria: Produtos e Serviços
+
+O cartão consignado é destinado a aposentados e servidores públicos.
+
+O cliente pode acompanhar todas as etapas do processo via portal.
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+Parcelamentos são ajustáveis conforme perfil de pagamento do cliente.
+==================================================
+
+--- ARQUIVO 11: 11_Produtos_e_Serviços__Documento_3.txt ---
+Tamanho: 388 caracteres
+----------------------------------------
+Título: Produtos e Serviços - Documento 3
+Categoria: Produtos e Serviços
+
+A aprovação depende de análise automatizada e posterior confirmação humana.
+
+Frase genérica sem valor semântico: 1234567890.
+
+Informação irrelevante: Banana azul voadora.
+
+Produtos têm suporte via chat, telefone e atendimento presencial.
+
+Cada produto possui requisitos específicos de elegibilidade e documentação.
+==================================================
+
+--- ARQUIVO 12: 12_Produtos_e_Serviços__Documento_4.txt ---
+Tamanho: 360 caracteres
+----------------------------------------
+Título: Produtos e Serviços - Documento 4
+Categoria: Produtos e Serviços
+
+Oferecemos cashback em compras com o cartão de crédito próprio.
+
+A contratação dos produtos é totalmente digital e segura.
+
+Simulações podem ser feitas online ou pelo aplicativo oficial.
+
+Dados fictícios devem ser ignorados pelo modelo.
+
+Dados fictícios devem ser ignorados pelo modelo.
+==================================================
+
+--- ARQUIVO 13: 13_Segurança_da_Informação__Documento_1.txt ---
+Tamanho: 387 caracteres
+----------------------------------------
+Título: Segurança da Informação - Documento 1
+Categoria: Segurança da Informação
+
+A empresa cumpre todas as exigências da LGPD em seus processos.
+
+Relatórios de segurança são enviados mensalmente à diretoria.
+
+Esta linha não tem relação com o conteúdo da categoria.
+
+Frase genérica sem valor semântico: 1234567890.
+
+Treinamentos de segurança da informação são realizados a cada semestre.
+==================================================
+
+--- ARQUIVO 14: 14_Segurança_da_Informação__Documento_2.txt ---
+Tamanho: 385 caracteres
+----------------------------------------
+Título: Segurança da Informação - Documento 2
+Categoria: Segurança da Informação
+
+Este parágrafo é um exemplo de ruído textual proposital.
+
+O sistema bloqueia acessos após 5 tentativas de login incorretas.
+
+A equipe de TI monitora e registra acessos suspeitos 24/7.
+
+Frase genérica sem valor semântico: 1234567890.
+
+Todos os dispositivos corporativos devem conter antivírus homologado.
+==================================================
+
+--- ARQUIVO 15: 15_Segurança_da_Informação__Documento_3.txt ---
+Tamanho: 329 caracteres
+----------------------------------------
+Título: Segurança da Informação - Documento 3
+Categoria: Segurança da Informação
+
+A autenticação em dois fatores é obrigatória para acessos sensíveis.
+
+Senhas devem conter pelo menos 12 caracteres e símbolos especiais.
+
+Frase genérica sem valor semântico: 1234567890.
+
+Incidentes de segurança devem ser reportados em até 2 horas.
+==================================================
+
+--- ARQUIVO 16: 16_Segurança_da_Informação__Documento_4.txt ---
+Tamanho: 323 caracteres
+----------------------------------------
+Título: Segurança da Informação - Documento 4
+Categoria: Segurança da Informação
+
+Informação irrelevante: Banana azul voadora.
+
+Backups são realizados diariamente em servidores em nuvem seguros.
+
+Todos os sistemas utilizam criptografia de ponta a ponta (AES-256).
+
+É proibido o uso de e-mail pessoal para fins corporativos.
+==================================================
+
+--- ARQUIVO 17: 17_Compliance__Documento_1.txt ---
+Tamanho: 318 caracteres
+----------------------------------------
+Título: Compliance - Documento 1
+Categoria: Compliance
+
+Fornecedores passam por processos de due diligence antes da contratação.
+
+A política de compliance garante conformidade com leis e regulamentos internos.
+
+Texto aleatório inserido como ruído para teste.
+
+O canal de ética funciona 24 horas por dia, todos os dias.
+==================================================
+
+--- ARQUIVO 18: 18_Compliance__Documento_2.txt ---
+Tamanho: 333 caracteres
+----------------------------------------
+Título: Compliance - Documento 2
+Categoria: Compliance
+
+Conflitos de interesse devem ser comunicados imediatamente ao gestor.
+
+Infrações éticas são avaliadas pelo comitê de compliance.
+
+Casos de corrupção são tratados com tolerância zero.
+
+Informação irrelevante: Banana azul voadora.
+
+Frase genérica sem valor semântico: 1234567890.
+==================================================
+
+--- ARQUIVO 19: 19_Compliance__Documento_3.txt ---
+Tamanho: 362 caracteres
+----------------------------------------
+Título: Compliance - Documento 3
+Categoria: Compliance
+
+Dados fictícios devem ser ignorados pelo modelo.
+
+Registros e documentos são armazenados conforme normas da CVM.
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+A empresa atua em conformidade com diretrizes do Banco Central.
+
+Treinamentos de integridade são obrigatórios e realizados anualmente.
+==================================================
+
+--- ARQUIVO 20: 20_Compliance__Documento_4.txt ---
+Tamanho: 331 caracteres
+----------------------------------------
+Título: Compliance - Documento 4
+Categoria: Compliance
+
+Este parágrafo é um exemplo de ruído textual proposital.
+
+Todos os colaboradores assinam o código de ética no momento da contratação.
+
+Auditorias internas são realizadas semestralmente por equipe independente.
+
+Existe um canal de denúncias anônimo disponível no site oficial.
+==================================================

@@ -1,40 +1,62 @@
-from fastapi import APIRouter, HTTPException
-from app.services.document_processor import DocumentProcessor
-from app.services.vector_service import VectorService
-from langchain.schema import Document as LangChainDocument
-from app.models.document import Document
+# ADMIN ROUTES - Interface HTTP para Operações Administrativas
+# Route é responsável apenas por HTTP: validação, autenticação, serialização
+# Toda lógica de negócio fica no AdminController
+
+from fastapi import APIRouter, HTTPException, Query
+from typing import Optional
+from app.controllers.admin_controller import AdminController, AdminBusinessException
 
 router = APIRouter()
-processor = DocumentProcessor()
-vector_service = VectorService()
+admin_controller = AdminController()
 
 @router.post("/admin/load-documents")
-async def load_documents_from_directory(directory_path: str = "conteudo_ficticio"):
-    try:
-        documents = processor.load_documents_from_directory(directory_path)
-        chunked_docs = processor.chunk_documents(documents)
-        for chunk in chunked_docs:
-            await vector_service.add_document(chunk)
-        
-        return {
-            "message": f"Successfully loaded {chunked_docs} document chunks from {len(documents)} files",
-            "total_files": len(documents),
-            "total_chunks": chunked_docs
-        }
+async def load_documents_from_directory(
+    directory_path: str = Query(
+        default="conteudo_ficticio", 
+        description="Caminho para diretório contendo arquivos .txt para indexar"
+    )
+) -> dict:
+    """
+    ENDPOINT ADMINISTRATIVO: Carrega documentos de diretório para o sistema RAG
     
+    RESPONSABILIDADES DA ROUTE:
+    - Validação de parâmetros HTTP
+    - Chamada para controller (lógica de negócio)
+    - Tratamento de exceções HTTP
+    - Serialização da resposta
+    
+    Args:
+        directory_path: Caminho para diretório com arquivos .txt
+        
+    Returns:
+        Dict com resultado do carregamento e métricas
+        
+    Raises:
+        HTTPException: Para erros HTTP (400, 404, 500)
+    """
+    try:
+        result = await admin_controller.load_documents_from_directory(directory_path)
+        if not result.get("success", True):
+            if "DIRECTORY_NOT_FOUND" in result.get("error", ""):
+                raise HTTPException(status_code=404, detail=result["message"])
+            elif "NO_TXT_FILES" in result.get("error", ""):
+                raise HTTPException(status_code=400, detail=result["message"])
+            else:
+                raise HTTPException(status_code=500, detail=result["message"])
+        return result
+        
+    except AdminBusinessException as e:
+        if e.error_code == "DIRECTORY_NOT_FOUND":
+            raise HTTPException(status_code=404, detail=e.message)
+        elif e.error_code == "NO_TXT_FILES":
+            raise HTTPException(status_code=400, detail=e.message)
+        else:
+            raise HTTPException(status_code=400, detail=e.message)
+            
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error loading documents: {str(e)}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Erro interno durante carregamento: {str(e)}"
+        )
 
-@router.get("/admin/collection-info")
-async def get_collection_info():
-    try:
-        collection = vector_service.collection
-        count = collection.count()
-        
-        return {
-            "collection_name": collection.name,
-            "document_count": count
-        }
-    
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error getting collection info: {str(e)}")
+
