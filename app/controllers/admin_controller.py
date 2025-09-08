@@ -1,7 +1,3 @@
-# ADMIN CONTROLLER - Lógica de Negócio para Operações Administrativas
-# Controller concentra lógica de negócio, orquestração de services e validações complexas
-# Route fica responsável apenas por HTTP: receber request, chamar controller, retornar response
-
 from typing import Dict, Any, List
 from app.services.document_processor import DocumentProcessor
 from app.services.vector_service import VectorService
@@ -43,15 +39,13 @@ class AdminController:
             Exception: Para erros técnicos inesperados
         """
         try:
-            # ETAPA 1: VALIDAÇÕES DE NEGÓCIO
             if validate_directory:
                 await self._validate_directory_path(directory_path)
             
-            # ETAPA 2: CARREGAR E PROCESSAR DOCUMENTOS
             documents = self.document_processor.load_documents_from_directory(directory_path)
             
             if not documents:
-                logger.warning(f"⚠️ Nenhum documento encontrado em: {directory_path}")
+                logger.warning(f"Nenhum documento encontrado em: {directory_path}")
                 return {
                     "success": False,
                     "message": f"Nenhum arquivo .txt encontrado em '{directory_path}'",
@@ -60,15 +54,12 @@ class AdminController:
                     "processing_details": []
                 }
             
-            # ETAPA 3: PROCESSAR EM LOTES E INDEXAR
             processing_results = await self._process_documents_batch(documents)
-            
-            # ETAPA 4: CALCULAR MÉTRICAS FINAIS
+        
             total_chunks = sum(result["chunks_created"] for result in processing_results)
             successful_files = sum(1 for result in processing_results if result["success"])
             failed_files = len(processing_results) - successful_files
             
-            # ETAPA 5: GERAR RESPOSTA DE NEGÓCIO
             result = {
                 "success": True,
                 "message": f"Carregamento concluído: {successful_files} arquivos processados com sucesso",
@@ -81,17 +72,10 @@ class AdminController:
                 "directory_processed": directory_path
             }
             
-            # ETAPA 6: LOGGING DE RESULTADO
-            logger.info(
-                f"✅ Carregamento concluído: "
-                f"{successful_files}/{len(documents)} arquivos, "
-                f"{total_chunks} chunks indexados"
-            )
-            
             return result
             
         except Exception as e:
-            logger.error(f"❌ Erro durante carregamento de documentos: {str(e)}")
+            logger.error(f"Erro durante carregamento de documentos: {str(e)}")
             return {
                 "success": False,
                 "message": f"Erro durante carregamento: {str(e)}",
@@ -130,9 +114,7 @@ class AdminController:
             logger.info(f"Processando documento {i}/{len(documents)}: {document.title}")
             
             try:
-                # Dividir documento em chunks
                 chunked_docs = self.document_processor.chunk_document(document)
-                
                 # Indexar cada chunk no vector store
                 chunks_indexed = 0
                 for chunk in chunked_docs:
@@ -149,7 +131,6 @@ class AdminController:
                     "file_source": document.metadata.get("source_file", "unknown")
                 }
                 
-                logger.info(f"✅ {document.title}: {chunks_indexed} chunks indexados")
                 
             except Exception as e:
                 logger.error(f"Erro processando {document.title}: {str(e)}")
@@ -168,7 +149,6 @@ class AdminController:
         return processing_results
     
 
-# Exceção específica para erros de negócio administrativos
 class AdminBusinessException(Exception):
     """Exceção para erros de lógica de negócio em operações administrativas"""
     

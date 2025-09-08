@@ -5,13 +5,13 @@ services:
     build: .
     ports:
       - "8000:8000"
-      - "6006:6006"  # Phoenix dashboard
+      - "6006:6006"
     volumes:
       - ./conteudo_ficticio:/app/conteudo_ficticio
     environment:
       - CHROMA_HOST=chromadb
       - CHROMA_PORT=8000
-      - DOCKER_CONTAINER=true  # Indica que está no Docker
+      - DOCKER_CONTAINER=true
     depends_on:
       - chromadb
   

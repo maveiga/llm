@@ -1,9 +1,6 @@
-# EVALUATION ROUTES - Interface HTTP para Avaliação RAGAS
-# Route é responsável apenas por HTTP: validação, serialização, tratamento de erros
-# Toda lógica de avaliação e relatórios fica no EvaluationController
-
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from typing import List, Optional, Dict, Any
+from datetime import datetime
 from app.models.rag_interaction import (
     RAGInteractionResponse, 
     UserFeedback, 
@@ -50,13 +47,11 @@ async def run_ragas_evaluation(
         HTTPException: Para erros HTTP (400, 404, 500)
     """
     try:
-        # CHAMA CONTROLLER: toda lógica RAGAS está lá
         evaluation_results = await evaluation_controller.execute_ragas_evaluation(
             evaluation_request,
-            background_execution=False  # Por enquanto, execução síncrona
+            background_execution=False
         )
         
-        # VERIFICAR SE HOUVE ERRO DE NEGÓCIO
         if evaluation_results.get("evaluation_status") == "error":
             error_details = evaluation_results.get("error_details", {})
             error_code = error_details.get("error_code", "UNKNOWN")
@@ -68,7 +63,6 @@ async def run_ragas_evaluation(
             else:
                 raise HTTPException(status_code=500, detail=error_details.get("message"))
         
-        # SUCESSO: resposta enriquecida com métricas de negócio
         print(evaluation_results)
         return {
             "message": "Avaliação RAGAS concluída com sucesso",
@@ -76,7 +70,6 @@ async def run_ragas_evaluation(
         }
         
     except EvaluationBusinessException as e:
-        # Exceções de negócio específicas
         if e.error_code == "NO_INTERACTIONS":
             raise HTTPException(status_code=404, detail=e.message)
         elif e.error_code in ["TOO_MANY_INTERACTIONS", "INVALID_INTERACTION_IDS"]:
@@ -85,37 +78,11 @@ async def run_ragas_evaluation(
             raise HTTPException(status_code=400, detail=e.message)
             
     except Exception as e:
-        # Erros técnicos inesperados
         raise HTTPException(
             status_code=500,
             detail=f"Erro interno durante avaliação RAGAS: {str(e)}"
         )
-
-@router.get("/ragas/report")
-async def get_quality_report(days: int = 30) -> Dict[str, Any]:
-    """
-    Gera relatório de qualidade das interações RAG
     
-    Args:
-        days: Número de dias para incluir no relatório
-    
-    Returns:
-        Dict com estatísticas e métricas de qualidade
-    """
-    try:
-        report = await ragas_service.get_quality_report(days=days)
-        
-        if "error" in report:
-            raise HTTPException(status_code=404, detail=report["error"])
-        
-        return report
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, 
-            detail=f"Erro ao gerar relatório de qualidade: {str(e)}"
-        )
-
 @router.get("/interactions")
 async def list_interactions(
     limit: int = 50,
@@ -146,7 +113,6 @@ async def list_interactions(
         result = await db.execute(query)
         interactions = result.scalars().all()
         
-        # Contar total
         count_query = select(RAGInteractionDB)
         if with_ragas_scores:
             count_query = count_query.where(RAGInteractionDB.ragas_scores.is_not(None))
@@ -184,7 +150,6 @@ async def list_interactions(
             detail=f"Erro ao listar interações: {str(e)}"
         )
 
-
 @router.post("/interactions/{interaction_id}/feedback")
 async def add_user_feedback(
     interaction_id: str,
@@ -216,7 +181,6 @@ async def add_user_feedback(
                 detail="Interação não encontrada"
             )
         
-        # Validar rating
         if feedback.rating < 1 or feedback.rating > 5:
             raise HTTPException(
                 status_code=400, 
@@ -228,8 +192,7 @@ async def add_user_feedback(
         
         return {
             "message": "Feedback adicionado com sucesso",
-            "interaction_id": interaction_id,
-            "rating": feedback.rating
+            "interaction_id": interaction_id
         }
         
     except HTTPException:
@@ -240,63 +203,43 @@ async def add_user_feedback(
             detail=f"Erro ao adicionar feedback: {str(e)}"
         )
 
-@router.get("/stats/overview")
-async def get_evaluation_stats(
-    db: AsyncSession = Depends(get_db)
+@router.get("/metrics/advanced")
+async def get_advanced_metrics(
+    limit: int = 50,
+    include_individual_scores: bool = False
 ) -> Dict[str, Any]:
     """
-    Obtém estatísticas gerais das avaliações
+    Endpoint dedicado para métricas avançadas RAG:
+    - Recall@3: Documentos relevantes nos top-3 resultados
+    - Precisão Percebida: Baseada no feedback dos usuários
     
+    Args:
+        limit: Número de interações para analisar
+        include_individual_scores: Se incluir scores individuais detalhados
+        
     Returns:
-        Dict com estatísticas gerais
+        Dict com métricas avançadas detalhadas
     """
     try:
-        # Buscar todas as interações
-        all_interactions_query = select(RAGInteractionDB)
-        all_result = await db.execute(all_interactions_query)
-        all_interactions = all_result.scalars().all()
-        
-        # Buscar interações com scores RAGAS
-        ragas_interactions_query = select(RAGInteractionDB).where(
-            RAGInteractionDB.ragas_scores.is_not(None)
+
+        response = await evaluation_controller.get_advanced_metrics(
+            limit=limit,
+            include_individual_scores=include_individual_scores
         )
-        ragas_result = await db.execute(ragas_interactions_query)
-        ragas_interactions = ragas_result.scalars().all()
         
-        # Buscar interações com feedback
-        feedback_interactions_query = select(RAGInteractionDB).where(
-            RAGInteractionDB.user_feedback.is_not(None)
-        )
-        feedback_result = await db.execute(feedback_interactions_query)
-        feedback_interactions = feedback_result.scalars().all()
+        return response
         
-        # Calcular estatísticas
-        avg_response_time = 0
-        if all_interactions:
-            response_times = [i.response_time for i in all_interactions if i.response_time]
-            if response_times:
-                avg_response_time = sum(response_times) / len(response_times)
-        
-        avg_user_rating = 0
-        if feedback_interactions:
-            ratings = [i.user_feedback for i in feedback_interactions if i.user_feedback]
-            if ratings:
-                avg_user_rating = sum(ratings) / len(ratings)
-        
-        return {
-            "total_interactions": len(all_interactions),
-            "interactions_with_ragas": len(ragas_interactions),
-            "interactions_with_feedback": len(feedback_interactions),
-            "average_response_time": round(avg_response_time, 3),
-            "average_user_rating": round(avg_user_rating, 2),
-            "coverage": {
-                "ragas_coverage": round(len(ragas_interactions) / len(all_interactions) * 100, 1) if all_interactions else 0,
-                "feedback_coverage": round(len(feedback_interactions) / len(all_interactions) * 100, 1) if all_interactions else 0
-            }
-        }
-        
+    except EvaluationBusinessException as e:
+        if e.error_code == "NO_INTERACTIONS":
+            raise HTTPException(status_code=404, detail=e.message)
+        elif e.error_code == "ADVANCED_METRICS_ERROR":
+            raise HTTPException(status_code=500, detail=e.message)
+        else:
+            raise HTTPException(status_code=400, detail=e.message)
+            
     except Exception as e:
         raise HTTPException(
-            status_code=500, 
-            detail=f"Erro ao obter estatísticas: {str(e)}"
+            status_code=500,
+            detail=f"Erro interno ao calcular métricas avançadas: {str(e)}"
         )
+

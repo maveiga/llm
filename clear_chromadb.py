@@ -12,7 +12,6 @@ def clear_chromadb():
     try:
         print("Limpando ChromaDB...")
         
-        # Método 1: Deletar a coleção
         try:
             client = chromadb.PersistentClient(path=settings.chroma_persist_directory)
             client.delete_collection(name=settings.chroma_collection_name)
@@ -20,7 +19,6 @@ def clear_chromadb():
         except Exception as e:
             print(f"Erro ao deletar coleção: {e}")
         
-        # Método 2: Deletar todo o diretório (mais garantido)
         if os.path.exists(settings.chroma_persist_directory):
             shutil.rmtree(settings.chroma_persist_directory)
             print(f"Diretório '{settings.chroma_persist_directory}' removido completamente!")

@@ -28,13 +28,12 @@ class SearchResponse(BaseModel):
     results: List[DocumentResponse]
     total_results: int
     
-    # Campos opcionais que podem ser adicionados dinamicamente
+
     search_metadata: Optional[Dict[str, Any]] = None
     quality_analysis: Optional[Dict[str, Any]] = None
     business_insights: Optional[Dict[str, Any]] = None
     search_status: Optional[str] = None
 
-# Modelos para o RAG
 class QuestionRequest(BaseModel):
     question: str
     max_documents: int = 5

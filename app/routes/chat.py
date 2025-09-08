@@ -30,10 +30,8 @@ async def ask_question(request: QuestionRequest) -> QuestionResponse:
         HTTPException: Para erros HTTP (400, 500)
     """
     try:
-        # CHAMA CONTROLLER: toda lógica RAG está lá
         response = await chat_controller.process_question(request)
-        
-        # VERIFICAR SE HOUVE ERRO DE NEGÓCIO
+    
         if response.get("business_status") == "error":
             error_details = response.get("error_details", {})
             error_type = error_details.get("error_type", "UNKNOWN")
@@ -42,12 +40,9 @@ async def ask_question(request: QuestionRequest) -> QuestionResponse:
                 raise HTTPException(status_code=400, detail=error_details.get("message"))
             else:
                 raise HTTPException(status_code=500, detail=error_details.get("message"))
-        
-        # SUCESSO: converter para modelo de resposta
         return QuestionResponse(**response)
         
     except ChatBusinessException as e:
-        # Exceções de negócio específicas (400 Bad Request)
         if e.error_code in ["EMPTY_QUESTION", "QUESTION_TOO_SHORT", "QUESTION_TOO_LONG"]:
             raise HTTPException(status_code=400, detail=e.message)
         elif e.error_code == "INVALID_MAX_DOCUMENTS":
@@ -56,7 +51,6 @@ async def ask_question(request: QuestionRequest) -> QuestionResponse:
             raise HTTPException(status_code=400, detail=e.message)
             
     except Exception as e:
-        # Erros técnicos inesperados (500 Internal Server Error)
         raise HTTPException(
             status_code=500,
             detail=f"Erro interno no pipeline RAG: {str(e)}"

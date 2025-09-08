@@ -1,31 +1,28 @@
-# RAGAS SERVICE - Serviço de Avaliação de Qualidade RAG
-# RAGAS (RAG Assessment) usa LLMs para avaliar se as respostas RAG são boas
-# É como um "professor" que dá notas para o sistema RAG
-
 import os
 import asyncio
-import nest_asyncio  # Para resolver conflitos de event loop
+import nest_asyncio
 
+#REMOVER, SE PARAR DE DAR CONFLITO NO DOCKER COM evaluate
 # IMPORTANTE: Configurar asyncio ANTES de qualquer outra importação
 # Isso previne conflitos de event loop com uvloop no Docker
 os.environ["UVLOOP_DISABLED"] = "1"
 asyncio.set_event_loop_policy(asyncio.DefaultEventLoopPolicy())
-
-# CONFIGURAR NEST_ASYNCIO para evitar conflitos com uvloop
-# Isso permite que RAGAS funcione corretamente com FastAPI
 nest_asyncio.apply()
 
 from typing import List, Dict, Any
-import pandas as pd  # Biblioteca para manipulação de dados em tabelas
-from datasets import Dataset  # Formato de dados que a biblioteca RAGAS consegue entender
-from ragas import evaluate  # Função principal que executa todas as avaliações RAGAS
-from ragas.metrics import faithfulness, answer_relevancy, context_precision, context_recall  # Métricas que medem qualidade RAG
-from sqlalchemy import select  # Comandos para buscar dados no banco de dados
-from app.models.rag_interaction import RAGInteractionDB  # Modelo que representa as conversas salvas no banco
-from app.services.database_service import AsyncSessionLocal  # Serviço para conectar com o banco de dados
-from app.services.phoenix_service import phoenix_service  # Serviço de observabilidade e monitoramento
-from app.core.config import settings  # Configurações gerais da aplicação (API keys, etc)
-import openai  # Biblioteca oficial da OpenAI para usar GPT
+import pandas as pd
+from datasets import Dataset
+from ragas import evaluate
+from ragas.metrics import faithfulness, answer_relevancy, context_precision, context_recall
+from sqlalchemy import select
+from app.models.rag_interaction import RAGInteractionDB
+from app.services.database_service import AsyncSessionLocal
+from app.services.phoenix_service import phoenix_service
+from app.core.config import settings
+import openai
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
 class RAGASService:
     """
@@ -39,27 +36,20 @@ class RAGASService:
     """
     
     def __init__(self):
-        # CONFIGURAR OPENAI API KEY PARA RAGAS
         self._setup_openai_config()
         
-        # MÉTRICAS DO RAGAS - O que vamos medir:
         self.metrics = [
-            faithfulness,      # FIDELIDADE: A resposta está baseada apenas no contexto? (previne alucinações)
-            answer_relevancy,  # RELEVÂNCIA: A resposta realmente responde a pergunta?
-            # context_precision, # PRECISÃO: Os contextos mais importantes apareceram primeiro? (DESATIVADO - precisa ground_truth)
-            # context_recall   # RECALL: Todos os contextos relevantes foram recuperados? (DESATIVADO - precisa ground_truth)
-            # usar quando tiver a resposta correta no banco
+            faithfulness, 
+            answer_relevancy,
+            #context_precision, # PRECISÃO: Os contextos mais importantes apareceram primeiro?
+            #context_recall   # RECALL: Todos os contextos relevantes foram recuperados?
         ]
     
     def _setup_openai_config(self):
+        openai.api_key = settings.openai_api_key
+        os.environ["OPENAI_API_KEY"] = settings.openai_api_key
 
-        if settings.openai_api_key:
-            openai.api_key = settings.openai_api_key
-            os.environ["OPENAI_API_KEY"] = settings.openai_api_key
-            print("Chave da OpenAI configurada com sucesso para o RAGAS")
-        else:
-            print("Chave da OpenAI não encontrada - RAGAS não conseguirá funcionar")
-
+      
     async def evaluate_interactions(
         self,
         interaction_ids: List[str] = None,
@@ -67,9 +57,6 @@ class RAGASService:
     ) -> Dict[str, Any]:
         """
         FUNÇÃO PRINCIPAL: Avalia a qualidade das conversas RAG usando inteligência artificial
-        
-        Esta é a função mais importante do serviço. Ela funciona como um "professor virtual"
-        que analisa as conversas entre usuários e o sistema RAG, dando notas de qualidade.
         
         COMO FUNCIONA O PROCESSO (8 etapas):
         1.Busca conversas salvas no banco de dados
@@ -85,89 +72,57 @@ class RAGASService:
             interaction_ids: Se você quiser avaliar conversas específicas, passe os IDs aqui
                            Se não passar nada, vai avaliar as conversas mais recentes
             limit: Quantas conversas avaliar no máximo (padrão: 100)
-            
-        RETORNA:
-            Um dicionário com:
-            - total_interactions: quantas conversas foram avaliadas
-            - average_scores: nota média geral do sistema
-            - individual_scores: nota individual de cada conversa
-            
-        EXEMPLO DE USO:
-            # Avaliar as 50 conversas mais recentes
-            resultado = await ragas_service.evaluate_interactions(limit=50)
-            
-            # Avaliar conversas específicas
-            resultado = await ragas_service.evaluate_interactions(['id1', 'id2', 'id3'])
+        
         """
         async with AsyncSessionLocal() as session:
             if interaction_ids:
-                # Se passou IDs específicos, busca só esses
                 query = select(RAGInteractionDB).where(
                     RAGInteractionDB.id.in_(interaction_ids)
                 )
             else:
-                # Senão, pega as últimas X interações
                 query = select(RAGInteractionDB).limit(limit)
             result = await session.execute(query)
-            interactions = result.scalars().all()  # Lista de interações do banco
+            interactions = result.scalars().all()
 
         if not interactions:
             return {"error": "Nenhuma interação encontrada para avaliar"}
 
-        # ETAPA 2:  PREPARAR DADOS NO FORMATO RAGAS
+
         data = []
         for interaction in interactions:
             data.append({
-                'question': interaction.question,    # A pergunta que o usuário fez
-                'answer': interaction.answer,        # A resposta que nosso sistema deu
-                'contexts': interaction.contexts,    # Os documentos que usamos como base
+                'question': interaction.question,
+                'answer': interaction.answer,
+                'contexts': interaction.contexts,
             })
-
-        # ETAPA 3:CRIAR DATASET PADRONIZADO
 
         dataset = Dataset.from_pandas(pd.DataFrame(data))
 
         try:
-            # ETAPA 4: EXECUTAR AVALIAÇÃO COM INTELIGÊNCIA ARTIFICIAL O RAGAS usa modelos de IA para "ler" e "entender" se as respostas são boas
-            print(f"🔄 RAGAS: Executando avaliação com {len(self.metrics)} métricas...")
-            print(f"🔄 RAGAS: Dataset shape: {dataset.shape if hasattr(dataset, 'shape') else 'N/A'}")
-            
+            print("RAGAS:LENDO E AVALIANDO INTERAÇÕES COM IA...")
             result = evaluate(dataset, metrics=self.metrics)
             
-            print(f"✅ RAGAS: Avaliação concluída. Tipo do resultado: {type(result)}")
-            print(f"📋 RAGAS: Atributos do resultado: {[attr for attr in dir(result) if not attr.startswith('_')][:10]}")
-            
-            # ETAPA 5: PROCESSAR RESULTADOS - COMPATÍVEL COM EvaluationResult
             if not result:
                 raise ValueError("RAGAS retornou resultado vazio")
             
-            # Extrair scores do EvaluationResult
             faithfulness_scores = []
             answer_relevancy_scores = []
             
             try:
-                # Converter para DataFrame se possível
                 if hasattr(result, 'to_pandas'):
                     df = result.to_pandas()
-                    print(f"📊 RAGAS: DataFrame criado com shape: {df.shape}")
-                    print(f"📊 RAGAS: Colunas disponíveis: {list(df.columns)}")
-                    
-                    # Extrair scores das colunas
                     if 'faithfulness' in df.columns:
                         faithfulness_scores = df['faithfulness'].tolist()
-                        print(f"📊 RAGAS: Faithfulness scores extraídos: {len(faithfulness_scores)} valores")
-                        print(f"📊 RAGAS: Primeiro faithfulness score (tipo): {type(faithfulness_scores[0]) if faithfulness_scores else 'Lista vazia'}")
+
                     else:
                         print("RAGAS: Coluna 'faithfulness' não encontrada")
                         
                     if 'answer_relevancy' in df.columns:
                         answer_relevancy_scores = df['answer_relevancy'].tolist()
-                        print(f"📊 RAGAS: Answer relevancy scores extraídos: {len(answer_relevancy_scores)} valores")
-                        print(f"📊 RAGAS: Primeiro answer_relevancy score (tipo): {type(answer_relevancy_scores[0]) if answer_relevancy_scores else 'Lista vazia'}")
+
                     else:
                         print("RAGAS: Coluna 'answer_relevancy' não encontrada")
                         
-                # Método alternativo: tentar acessar diretamente os atributos
                 elif hasattr(result, 'scores'):
                     scores = result.scores
                     if 'faithfulness' in scores:
@@ -184,21 +139,19 @@ class RAGASService:
                             answer_relevancy_scores = getattr(result, attr, [])
                             
             except Exception as e:
-                print(f"⚠️  RAGAS: Erro ao extrair scores: {str(e)}")
-
-            # Calcular médias de forma mais segura
+                print(f"AVISO RAGAS: Erro ao extrair scores: {str(e)}")
 
             faithfulness_avg = 0
             if faithfulness_scores and len(faithfulness_scores) > 0:
                 valid_faithfulness = [score for score in faithfulness_scores if score is not None and isinstance(score, (int, float))]
                 faithfulness_avg = sum(valid_faithfulness) / len(valid_faithfulness) if valid_faithfulness else 0
-                print(f"📊 RAGAS: Média de fidelidade: {faithfulness_avg:.3f} (baseado em {len(valid_faithfulness)} scores válidos)")
+                print(f"RAGAS: Média de fidelidade: {faithfulness_avg:.3f} (baseado em {len(valid_faithfulness)} scores válidos)")
             
             relevancy_avg = 0  
             if answer_relevancy_scores and len(answer_relevancy_scores) > 0:
                 valid_relevancy = [score for score in answer_relevancy_scores if score is not None and isinstance(score, (int, float))]
                 relevancy_avg = sum(valid_relevancy) / len(valid_relevancy) if valid_relevancy else 0
-                print(f"📊 RAGAS: Média de relevância: {relevancy_avg:.3f} (baseado em {len(valid_relevancy)} scores válidos)")
+                print(f"RAGAS: Média de relevância: {relevancy_avg:.3f} (baseado em {len(valid_relevancy)} scores válidos)")
             
             evaluation_results = {
                 'total_interactions': len(interactions),
@@ -208,12 +161,9 @@ class RAGASService:
                 },
                 'individual_scores': []
             }
-
-            # ETAPA 6: EXTRAIR SCORES INDIVIDUAIS - VERSÃO SIMPLIFICADA
             
             for i, interaction in enumerate(interactions):
                 try:
-                    # Scores individuais com verificação de bounds
                     faithfulness_score = None
                     if i < len(faithfulness_scores):
                         score = faithfulness_scores[i]
@@ -235,7 +185,7 @@ class RAGASService:
                     evaluation_results['individual_scores'].append(individual_score)
                     
                 except Exception as e:
-                    print(f" RAGAS: Erro ao processar score individual {i}: {str(e)}")
+                    print(f"RAGAS: Erro ao processar score individual {i}: {str(e)}")
                     evaluation_results['individual_scores'].append({
                         'interaction_id': interaction.id,
                         'question': interaction.question[:100] + "..." if len(interaction.question) > 100 else interaction.question,
@@ -245,25 +195,16 @@ class RAGASService:
             
             print(f"RAGAS: {len(evaluation_results['individual_scores'])} scores individuais processados")
 
-            # ETAPA 7: SALVAR SCORES NO BANCO DE DADOS
-            # Salva os resultados para acompanhar evolução ao longo do tempo
             await self._save_ragas_scores(interactions, evaluation_results['individual_scores'])
 
-            # ETAPA 8: PHOENIX REMOVIDO
-            # Phoenix captura dados automaticamente via instrumentação OpenTelemetry
-
+            advanced_metrics = await self._calculate_advanced_metrics(interactions, evaluation_results['individual_scores'])
+            evaluation_results['advanced_metrics'] = advanced_metrics
+            
             return evaluation_results
 
         except Exception as e:
-            # TRATAMENTO DE ERRO MELHORADO
             print(f"RAGAS: Erro durante avaliação: {str(e)}")
             print(f"RAGAS: Tipo do erro: {type(e).__name__}")
-            
-            # Log adicional para debug
-            if hasattr(e, '__traceback__'):
-                import traceback
-                print(f"RAGAS: Traceback: {traceback.format_exc()}")
-            
             error_message = str(e) if str(e) != "0" else "Erro desconhecido na avaliação RAGAS"
             
             return {
@@ -283,7 +224,7 @@ class RAGASService:
         individual_scores: List[Dict]
     ):
         """
-        Salva as notas RAGAS no banco de dados para criar um histórico
+        Salva as notas RAGAS no banco de dados
         
         Esta função é importante para:
         - Acompanhar se a qualidade do sistema está melhorando ou piorando ao longo do tempo
@@ -303,96 +244,139 @@ class RAGASService:
         """
         async with AsyncSessionLocal() as session:
             for interaction, scores in zip(interactions, individual_scores):
-                # Cria um dicionário só com as notas principais (sem outros dados desnecessários)
                 ragas_scores = {
-                    'faithfulness': scores.get('faithfulness'),         # Nota de fidelidade (0 a 1, quanto maior melhor)
-                    'answer_relevancy': scores.get('answer_relevancy'), # Nota de relevância (0 a 1, quanto maior melhor)
+                    'faithfulness': scores.get('faithfulness'),
+                    'answer_relevancy': scores.get('answer_relevancy'), 
                 }
                 
                 interaction.ragas_scores = ragas_scores
                 session.add(interaction)
             await session.commit()
 
-    async def get_quality_report(self, days: int = 30) -> Dict[str, Any]:
-        """
-        Gera um relatório completo da qualidade do sistema RAG
-        
-        Esta função analisa todas as conversas que já foram avaliadas pelo RAGAS
-        e cria um relatório executivo com estatísticas úteis para entender
-        como o sistema está performando.
-        
-        O QUE O RELATÓRIO MOSTRA:
-        - Quantas conversas foram analisadas no período
-        - Nota média geral do sistema (fidelidade + relevância)
-        - Melhor e pior nota registrada
-        - Score geral de qualidade (média das duas métricas)
-        
-        PARÂMETROS:
-            days: Quantos dias para trás incluir no relatório (padrão: 30 dias)
-            
-        RETORNA:
-            Dicionário com estatísticas completas ou mensagem de erro se não houver dados
-            
-        EXEMPLO DE USO:
-            # Relatório dos últimos 7 dias
-            relatorio = await ragas_service.get_quality_report(days=7)
-            
-            # Relatório do último mês (padrão)
-            relatorio = await ragas_service.get_quality_report()
-        """
-        from datetime import datetime, timedelta
-        
-        cutoff_date = datetime.now() - timedelta(days=days)
-        
-        async with AsyncSessionLocal() as session:
-            query = select(RAGInteractionDB).where(
-                RAGInteractionDB.timestamp >= cutoff_date,
-                RAGInteractionDB.ragas_scores.is_not(None)
-            )
-            
-            result = await session.execute(query)
-            interactions = result.scalars().all()
 
+
+    async def _calculate_advanced_metrics(
+        self, 
+        interactions: List[RAGInteractionDB], 
+        individual_scores: List[Dict]
+    ) -> Dict[str, Any]:
+        """
+        Calcula métricas avançadas não cobertas pelo RAGAS padrão:
+        
+        1. RECALL@3: Avalia se documentos relevantes estão nos top-3 resultados
+        2. PRECISÃO PERCEBIDA: Baseada no feedback do usuário (ratings 1-5)
+        """
+        
         if not interactions:
-            return {"error": f"Nenhuma interação avaliada nos últimos {days} dias"}
+            print("AVISO: Nenhuma interação fornecida para calcular métricas avançadas")
+            return self._get_empty_advanced_metrics()
+        
+        # 1. RECALL@3 - Documentos relevantes nos top-3
+        recall_at_3_scores = []
 
-        # Calcular estatísticas
-        faithfulness_scores = []
-        relevancy_scores = []
-
+        for i, interaction in enumerate(interactions):
+            try:
+                if hasattr(interaction, 'sources') and interaction.sources:
+                    print(f"Interação {i+1} - {len(interaction.sources)} sources disponíveis")
+                    
+                    sources_are_dicts = all(isinstance(source, dict) for source in interaction.sources)
+                    
+                    if sources_are_dicts:
+                        top_3_sources = interaction.sources[:3]
+                        relevant_in_top3 = sum(1 for source in top_3_sources if source.get('similarity_score', 0) > 0.3)
+                        total_relevant = sum(1 for source in interaction.sources if source.get('similarity_score', 0) > 0.3)
+                        
+                        print(f"Interação {i+1} - Relevant in top3: {relevant_in_top3}, Total relevant: {total_relevant}")
+                        
+                        if total_relevant > 0:
+                            recall_at_3 = relevant_in_top3 / total_relevant
+                            recall_at_3_scores.append(recall_at_3)
+                            print(f"Interação {i+1} - Recall@3: {recall_at_3:.3f}")
+                        else:
+                            recall_at_3_scores.append(0.0)
+                            print(f"Interação {i+1} - Nenhum documento relevante")
+                    else:
+                        if len(interaction.sources) >= 3:
+                            recall_at_3_scores.append(1.0)
+                        else:
+                            recall_at_3_scores.append(len(interaction.sources) / 3.0)
+                        print(f"Interação {i+1} - Sources não são dicts, score: {recall_at_3_scores[-1]}")
+                        
+                elif hasattr(interaction, 'contexts') and interaction.contexts:
+                    print(f"Interação {i+1} - Usando contexts como fallback")
+                    if len(interaction.contexts) >= 3:
+                        recall_at_3_scores.append(1.0)
+                    else:
+                        recall_at_3_scores.append(len(interaction.contexts) / 3.0)
+                else:
+                    recall_at_3_scores.append(0.0)
+                    print(f"Interação {i+1} - Sem sources ou contexts")
+                    
+            except Exception as e:
+                print(f"Erro ao calcular Recall@3 para interação {i+1}: {e}")
+                recall_at_3_scores.append(0.0)
+                continue
+        
+        avg_recall_at_3 = sum(recall_at_3_scores) / len(recall_at_3_scores) if recall_at_3_scores else 0
+        
+        # 2. PRECISÃO PERCEBIDA - Baseada em feedback do usuário
+        user_feedback_scores = []
         for interaction in interactions:
-            if interaction.ragas_scores:
-                if interaction.ragas_scores.get('faithfulness'):
-                    faithfulness_scores.append(interaction.ragas_scores['faithfulness'])
-                if interaction.ragas_scores.get('answer_relevancy'):
-                    relevancy_scores.append(interaction.ragas_scores['answer_relevancy'])
+            try:
+                if hasattr(interaction, 'user_feedback') and interaction.user_feedback and isinstance(interaction.user_feedback, (int, float)):
+                    feedback_value = float(interaction.user_feedback)
+                    if 1 <= feedback_value <= 5:
+                        perceived_precision = (feedback_value - 1) / 4
+                        user_feedback_scores.append(perceived_precision)
 
-        def calculate_stats(scores):
-            if not scores:
-                return {'mean': 0, 'min': 0, 'max': 0, 'count': 0}
-            return {
-                'mean': sum(scores) / len(scores),
-                'min': min(scores),
-                'max': max(scores),
-                'count': len(scores)
-            }
-
-        return {
-            'period': f"Últimos {days} dias",
-            'total_interactions': len(interactions),
-            'metrics': {
-                'faithfulness': calculate_stats(faithfulness_scores),
-                'answer_relevancy': calculate_stats(relevancy_scores),
+                        #FEEDBACK-MIN
+                        #------------------------
+                        #MAX-MIN
+            except Exception as e:
+                print(f"AVISO: Erro ao processar feedback do usuário: {e}")
+                continue
+        
+        avg_perceived_precision = sum(user_feedback_scores) / len(user_feedback_scores) if user_feedback_scores else None
+        
+        advanced_metrics = {
+            "recall_at_3": {
+                "value": round(avg_recall_at_3, 3),
+                "description": "Proporção de documentos relevantes nos top-3 resultados",
+                "interactions_analyzed": len(recall_at_3_scores),
+                "individual_scores": [round(score, 3) for score in recall_at_3_scores] 
             },
-            'overall_quality': {
-                'average_score': (
-                    calculate_stats(faithfulness_scores)['mean'] +
-                    calculate_stats(relevancy_scores)['mean']
-                ) / 2 if faithfulness_scores and relevancy_scores else 0
+            "perceived_precision": {
+                "value": round(avg_perceived_precision, 3) if avg_perceived_precision is not None else None,
+                "description": "Precisão baseada no feedback dos usuários (escala 0-1)",
+                "interactions_analyzed": len(user_feedback_scores),
+
+            }
+        }
+        
+        print(f"Métricas avançadas calculadas:")
+        print(f"   - Recall@3: {advanced_metrics['recall_at_3']['value']:.3f} ({len(recall_at_3_scores)} interações)")
+        print(f"   - Precisão Percebida: {advanced_metrics['perceived_precision']['value'] or 'N/A'} ({len(user_feedback_scores)} feedbacks)")
+        
+        return advanced_metrics
+    
+
+
+    def _get_empty_advanced_metrics(self) -> Dict[str, Any]:
+        """Retorna estrutura vazia de métricas avançadas quando não há dados suficientes"""
+        return {
+            "recall_at_3": {
+                "value": 0.0,
+                "description": "Proporção de documentos relevantes nos top-3 resultados",
+                "interactions_analyzed": 0,
+                "individual_scores": []
+            },
+            "perceived_precision": {
+                "value": None,
+                "description": "Precisão baseada no feedback dos usuários (escala 0-1)",
+                "interactions_analyzed": 0,
+                "feedback_distribution": None
             }
         }
 
 
-
-# Instância global do serviço RAGAS
 ragas_service = RAGASService()

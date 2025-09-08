@@ -1,20 +1,12 @@
-# RAG SERVICE - Orquestrador Principal do Sistema RAG
-# Este é o "maestro" que coordena todo o pipeline RAG:
-# 1. Busca documentos relevantes (VectorService)
-# 2. Gera resposta com LLM (LLMService)
-# 3. Salva interação no banco (DatabaseService)
-# 4. Monitora com Phoenix (PhoenixService)
-# 5. Disponibiliza dados para RAGAS avaliar depois
-
 from typing import List, Dict, Any, Optional
-import time  # Medir tempo de resposta
-import uuid  # Gerar IDs únicos para interações
-from app.services.vector_service import VectorService  # Busca vetorial de documentos
-from app.services.llm_service import LLMService  # Geração de respostas com GPT
-from app.models.document import DocumentResponse  # Modelo de documento
-from app.models.rag_interaction import RAGInteractionDB, RAGInteractionCreate  # Modelos de interação
-from app.services.database_service import AsyncSessionLocal  # Conexão com banco de dados
-from app.services.phoenix_service import phoenix_service  # Observabilidade
+import time
+import uuid
+from app.services.vector_service import VectorService
+from app.services.llm_service import LLMService
+from app.models.document import DocumentResponse
+from app.models.rag_interaction import RAGInteractionDB, RAGInteractionCreate
+from app.services.database_service import AsyncSessionLocal
+from app.services.phoenix_service import phoenix_service
 import logging
 
 class RAGService:
@@ -45,8 +37,8 @@ class RAGService:
     """
     
     def __init__(self):
-        self.vector_service = VectorService()  # Busca vetorial (ChromaDB + embeddings)
-        self.llm_service = LLMService()        # Geração de resposta (LangChain + OpenAI)
+        self.vector_service = VectorService() 
+        self.llm_service = LLMService()
     
     async def ask_question(
         self, 
@@ -57,11 +49,11 @@ class RAGService:
     ) -> Dict[str, Any]:
         start_time = time.time()
         
-        # Vector search: converte pergunta em embedding e busca documentos similares
+        print(f"convertendo pergunta em embedding e buscando documentos similares")
         relevant_docs = await self.vector_service.search_documents(
-            query=question,                # Pergunta vira embedding
-            limit=max_documents,           # Top-K documentos mais similares
-            category_filter=category_filter # Filtro opcional por categoria
+            query=question,
+            limit=max_documents,
+            category_filter=category_filter
         )
         
         if not relevant_docs:
@@ -84,9 +76,8 @@ class RAGService:
             
             return response
 
-        # CONVERTER DOCUMENTOS PARA FORMATO DO LLM
-        context_documents = []  # Para LLMService
-        contexts_for_db = []    # Para banco de dados
+        context_documents = []
+        contexts_for_db = []    #banco de dados
         
         for doc in relevant_docs:
             context_documents.append({
@@ -99,13 +90,12 @@ class RAGService:
 
             contexts_for_db.append(doc.content)
 
-        #GERAR RESPOSTA COM LLM (LANGCHAIN + OPENAI)
+
         llm_response = await self.llm_service.generate_answer(
-            question=question,              # Pergunta original
-            context_documents=context_documents  # Documentos como contexto
+            question=question,
+            context_documents=context_documents
         )
 
-        # ETAPA 4: ENRIQUECER RESPOSTA COM INFORMAÇÕES ADICIONAIS
         search_results = [
             {
                 "title": doc.title,
@@ -115,30 +105,26 @@ class RAGService:
             }
             for doc in relevant_docs
         ]
-        
-        # Combina resposta do LLM com informações extras
+
         response = {
-            **llm_response,                    # Resposta + fontes do LLM
-            "has_context": True,              # Flag indicando que tem contexto
-            "search_results": search_results  # Detalhes dos documentos encontrados
+            **llm_response,
+            "has_context": True,
+            "search_results": search_results
         }
         
-        # SALVAR INTERAÇÃO NO BANCO DE DADOS
         response_time = time.time() - start_time
-        print(f"⏱️ Tempo total de resposta: {response_time:.2f}s")
+
         
         if save_interaction:
-            print(f"💾 Salvando interação no banco de dados...")
             interaction_id = await self._save_interaction(
-                question=question,                      # Pergunta original
-                answer=response["answer"],              # Resposta gerada
-                contexts=contexts_for_db,               # Textos usados como contexto
-                sources=response.get("sources", []),    # Fontes citadas
-                response_time=response_time             # Performance
+                question=question,
+                answer=response["answer"],
+                contexts=contexts_for_db,
+                sources=response.get("sources", []),
+                response_time=response_time
             )
             response["interaction_id"] = interaction_id
             
-            # Phoenix monitora automaticamente via instrumentação do OpenTelemetry
             if phoenix_service.is_enabled:
                 print(f"Phoenix ativo ")
         
@@ -152,19 +138,16 @@ class RAGService:
         sources: List[Dict],
         response_time: float
     ) -> str:
-
-        # Gerar ID único para a interação
         interaction_id = str(uuid.uuid4())
         
-        # Salvar no banco de dados
         async with AsyncSessionLocal() as session:
             interaction = RAGInteractionDB(
                 id=interaction_id,
-                question=question,          # RAGAS usará isso para avaliar
-                answer=answer,              # RAGAS avaliará se é boa resposta
-                contexts=contexts,          # RAGAS avaliará se contexto é relevante
-                sources=sources,            # Metadados das fontes
-                response_time=response_time # Métrica de performance
+                question=question,
+                answer=answer,
+                contexts=contexts,
+                sources=sources,
+                response_time=response_time
             )
             
             session.add(interaction)

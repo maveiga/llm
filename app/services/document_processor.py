@@ -1,21 +1,15 @@
-# DOCUMENT PROCESSOR - Serviço de Processamento e Limpeza de Documentos
-# Este serviço prepara documentos para serem usados no sistema RAG:
-# 1. Lê arquivos de texto
-# 2. Limpa conteúdo (remove ruído, dados fictícios)
-# 3. Divide em chunks usando LangChain
-# 4. Calcula perplexidade para detectar texto de baixa qualidade
 
 import os
 import re
 from typing import List, Set
-import spacy  # Processamento de linguagem natural (PNL)
-from langchain.text_splitter import RecursiveCharacterTextSplitter  # Divisor de texto do LangChain
-from langchain.schema import Document as LangChainDocument  # Tipo de documento do LangChain
-from app.models.document import Document  # Modelo de documento do projeto
-import numpy as np  # Cálculos numéricos
-from transformers import AutoTokenizer, AutoModelForCausalLM  # Modelo HuggingFace para perplexidade
+import spacy
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.schema import Document as LangChainDocument
+from app.models.document import Document
+import numpy as np
+from transformers import AutoTokenizer, AutoModelForCausalLM
 from pathlib import Path
-import torch  # Framework de deep learning
+import torch
 
 
 class DocumentProcessor:
@@ -36,30 +30,28 @@ class DocumentProcessor:
     """
     
     def __init__(self):
-        # CONFIGURAR DIVISOR DE TEXTO (LANGCHAIN)
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=500,                           # Tamanho máximo de cada pedaço
-            chunk_overlap=50,                         # Sobreposição entre pedaços (evita perder contexto)
-            length_function=len,                      # Como medir tamanho (caracteres)
-            separators=["\n\n", "\n", " ", ""]        # Onde preferir quebrar (parágrafo > linha > espaço)
+            chunk_size=500,
+            chunk_overlap=50,
+            length_function=len,
+            separators=["\n\n", "\n", " ", ""]
         )
         
-        # CARREGAR MODELO SPACY PARA PROCESSAMENTO DE TEXTO
         try:
             self.nlp = spacy.load("pt_core_news_lg")
         except OSError:
             try:
-                self.nlp = spacy.load("pt_core_news_sm")  # Modelo pequeno (fallback)
+                self.nlp = spacy.load("pt_core_news_sm")
             except OSError:
                 print("Instale modelo spaCy: python -m spacy download pt_core_news_lg")
                 self.nlp = None
         
-        # CARREGAR MODELO PARA CÁLCULO DE PERPLEXIDADE
+        # CARREGAR MODELO PARA CÁLCULO DE PERPLEXIDADE GPT2
         try:
-            self.model_name = "pierreguillou/gpt2-small-portuguese"  # Modelo leve em português
-            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)  # Converte texto em números
-            self.model = AutoModelForCausalLM.from_pretrained(self.model_name)  # Modelo neural
-            self.PERPLEXITY_THRESHOLD = 600  #> 600 são suspeitas
+            self.model_name = "pierreguillou/gpt2-small-portuguese"
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+            self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
+            self.PERPLEXITY_THRESHOLD = 600
         except:
             print("Erro ao carregar modelo HuggingFace para perplexidade")
             self.tokenizer = None
@@ -84,36 +76,28 @@ class DocumentProcessor:
         """
         documents = []
         
-        # Verifica se diretório existe
         if not os.path.exists(directory_path):
             raise FileNotFoundError(f"Diretório não encontrado: {directory_path}")
         
-        # Processa cada arquivo .txt do diretório
         for filename in os.listdir(directory_path):
             if filename.endswith('.txt'):
                 file_path = os.path.join(directory_path, filename)
                 
                 try:
-                    #LER ARQUIVO
                     with open(file_path, 'r', encoding='utf-8') as file:
                         content = file.read().strip()
                     
-                    #EXTRAIR METADADOS
                     title, category = self._extract_metadata_from_content(content)
-                    
-                    #LIMPAR
                     clean_content = self._clean_content(content)
                     
-                    #VERIFICAR SE SOBROU CONTEÚDO DEPOIS DA LIMPEZA
                     if not clean_content.strip():
                         print(f"Arquivo vazio após limpeza: {filename}")
                         continue
                     
-                    # PASSO 5: CRIAR OBJETO DOCUMENT PADRONIZADO
                     document = Document(
-                        title=title or filename.replace('.txt', ''),  # Título ou nome do arquivo
-                        category=category or "sem_categoria",         # Categoria ou padrão
-                        content=clean_content,                        # Conteúdo limpo
+                        title=title or filename.replace('.txt', ''),
+                        category=category or "sem_categoria",
+                        content=clean_content,
                         metadata={
                             "source_file": filename,
                             "file_path": file_path
@@ -178,24 +162,22 @@ class DocumentProcessor:
             sentence_text = sent.text.strip() 
 
             if len(sentence_text.split()) < 3:
-                continue # Ignorar sentenças muito curtas
+                continue 
 
-            #CALCULAR PERPLEXIDADE
             ppl = self._calculate_perplexity(sentence_text, self.model, self.tokenizer)
 
-            # Essas frases têm alta perplexidade mas são legítimas
+            # Essas frases têm alta perplexidade mas são verdadeiras
             EXCEPTIONS = [
                 "O colaborador deve enviar documentos via plataforma digital.",
                 "Clientes negativados devem quitar dívidas anteriores antes de nova análise."
             ]
             
-            # Força remoção independente da perplexidade
+            # Força remoção independente da perplexidade, perplexidade delas estão baixas
             KNOWN_NOISE = [
                 "Dados fictícios devem ser ignorados pelo modelo.",
                 "Este parágrafo é um exemplo de ruído textual proposital."
             ]
             
-            # ETAPA 3: DECIDIR SE MANTER OU REMOVER A SENTENÇA
             if (ppl > self.PERPLEXITY_THRESHOLD and sentence_text not in EXCEPTIONS) or sentence_text in KNOWN_NOISE:
                 suspect_phrases.append({"texto": sentence_text, "perplexidade": ppl})
             else:
@@ -206,7 +188,6 @@ class DocumentProcessor:
 
         
     def chunk_document(self, document: Document) -> List[Document]:
-        # Usa o text_splitter do LangChain para dividir inteligentemente
         chunks = self.text_splitter.split_text(document.content)
         
         chunked_documents = []
@@ -249,21 +230,16 @@ class DocumentProcessor:
         if not sentence.strip():
             return 0.0
             
-        # CONVERTER EM NÚMEROS
         inputs = tokenizer(sentence, return_tensors="pt")
-        
-        # VERIFICAR SE SENTENÇA NÃO É MUITO LONGA
+    
         if inputs.input_ids.size(1) > model.config.n_positions:
-            return float('inf')  # Perplexidade infinita = "muito estranho"
+            return float('inf')
             
-        # CALCULAR PERPLEXIDADE
         with torch.no_grad():
             # Modelo tenta prever cada palavra e calcula o erro
             outputs = model(**inputs, labels=inputs["input_ids"])
-            # Loss = quanto o modelo "errou" nas previsões
             loss = outputs.loss
             
-        #CONVERTER LOSS EM PERPLEXIDADE
+        #CONVERTER LOSS EM PERPLEXIDADE E CONVERTE TENSOR PYTORCH EM NÚMERO PYTHON
         ppl = torch.exp(loss)
-        
-        return ppl.item()  # Converte tensor PyTorch em número Python
+        return ppl.item()

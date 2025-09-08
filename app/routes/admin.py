@@ -35,25 +35,17 @@ async def load_documents_from_directory(
         HTTPException: Para erros HTTP (400, 404, 500)
     """
     try:
-        # CHAMA CONTROLLER: toda lógica de negócio está lá
         result = await admin_controller.load_documents_from_directory(directory_path)
-        
-        # CONTROLLER RETORNOU ERRO DE NEGÓCIO
         if not result.get("success", True):
-            # Se é erro de negócio conhecido, retorna 400 (Bad Request)
             if "DIRECTORY_NOT_FOUND" in result.get("error", ""):
                 raise HTTPException(status_code=404, detail=result["message"])
             elif "NO_TXT_FILES" in result.get("error", ""):
                 raise HTTPException(status_code=400, detail=result["message"])
             else:
-                # Erro genérico de processamento
                 raise HTTPException(status_code=500, detail=result["message"])
-        
-        # SUCESSO: retorna resultado do controller
         return result
         
     except AdminBusinessException as e:
-        # Exceções de negócio específicas (400 Bad Request)
         if e.error_code == "DIRECTORY_NOT_FOUND":
             raise HTTPException(status_code=404, detail=e.message)
         elif e.error_code == "NO_TXT_FILES":
@@ -62,7 +54,6 @@ async def load_documents_from_directory(
             raise HTTPException(status_code=400, detail=e.message)
             
     except Exception as e:
-        # Erros técnicos inesperados (500 Internal Server Error)
         raise HTTPException(
             status_code=500, 
             detail=f"Erro interno durante carregamento: {str(e)}"

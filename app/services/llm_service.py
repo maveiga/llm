@@ -1,12 +1,8 @@
-# LLM SERVICE - Serviço de Geração de Respostas com LangChain + OpenAI
-# Este é o "cérebro" do sistema RAG que gera as respostas finais
-# Usa LangChain para facilitar a comunicação com modelos de linguagem
-
 import os
 from typing import List, Dict, Any
-from langchain_openai import ChatOpenAI  # Interface LangChain para OpenAI GPT
-from langchain.schema import HumanMessage, SystemMessage  # Tipos de mensagem do LangChain
-from app.core.config import settings  # Configurações (API keys, etc.)
+from langchain_openai import ChatOpenAI
+from langchain.schema import HumanMessage, SystemMessage
+from app.core.config import settings
 
 class LLMService:
     """
@@ -26,11 +22,10 @@ class LLMService:
     """
     
     def __init__(self):
-        # Inicializa o modelo GPT-3.5 via LangChain
         self.llm = ChatOpenAI(
-            model="gpt-3.5-turbo",           # Modelo específico (pode ser GPT-4, Claude, etc.)
-            temperature=0.7,                # Criatividade (0=robótico, 1=criativo)
-            api_key=settings.openai_api_key # Chave da API OpenAI
+            model="gpt-3.5-turbo",
+            temperature=0.7,
+            api_key=settings.openai_api_key
         )
     
     async def generate_answer(
@@ -57,7 +52,6 @@ class LLMService:
             Dict com resposta gerada, fontes citadas e metadados
         """
         
-        # Converte documentos encontrados num texto estruturado que GPT entende
         context_text = ""
         sources = []
         
@@ -83,6 +77,7 @@ class LLMService:
         4. Se possivel cite fontes como titulo e categoria no formato: (titulo - categoria) no final de cada afirmação
         5. Seja preciso e objetivo - evite invenções ou alucinações
         6. Mantenha um tom profissional
+        7. Responda em português
 
         DOCUMENTOS DISPONÍVEIS PARA CONSULTA:
         {context}"""
@@ -99,10 +94,10 @@ class LLMService:
             answer = response.content
             
             return {
-                "answer": answer,                        # Resposta gerada pelo GPT
-                "sources": sources,                      # Fontes citadas
-                "context_used": len(context_documents),  # Quantos documentos foram usados
-                "question": question                     # Pergunta original
+                "answer": answer,
+                "sources": sources,
+                "context_used": len(context_documents),
+                "question": question
             }
             
         except Exception as e:

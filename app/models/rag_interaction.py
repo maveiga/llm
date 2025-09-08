@@ -14,15 +14,14 @@ class RAGInteractionDB(Base):
     timestamp = Column(DateTime, default=func.now())
     question = Column(Text, nullable=False)
     answer = Column(Text, nullable=False)
-    contexts = Column(JSON)  # Lista de strings dos contextos usados
-    sources = Column(JSON)   # Lista de dicionários com informações das fontes
-    user_feedback = Column(Integer)  # 1-5 rating opcional
-    ragas_scores = Column(JSON)      # Scores do RAGAS
+    contexts = Column(JSON)
+    sources = Column(JSON)
+    user_feedback = Column(Integer)
+    ragas_scores = Column(JSON)
     model_version = Column(String, default="gpt-3.5-turbo")
     embedding_model = Column(String, default="all-MiniLM-L6-v2")
-    response_time = Column(Float)    # Tempo de resposta em segundos
+    response_time = Column(Float)
 
-# Pydantic models para API
 class RAGInteractionCreate(BaseModel):
     question: str
     answer: str
@@ -47,8 +46,7 @@ class RAGInteractionResponse(BaseModel):
         from_attributes = True
 
 class UserFeedback(BaseModel):
-    rating: int  # 1-5
-    comment: Optional[str] = None
+    rating: int
 
 class RAGASEvaluation(BaseModel):
     interaction_ids: Optional[List[str]] = None
