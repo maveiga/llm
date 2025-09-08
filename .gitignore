@@ -42,3 +42,6 @@ logs/
 *.h5
 *.csv
 *.parquet
+
+
+.env
