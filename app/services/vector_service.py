@@ -1,6 +1,6 @@
 import chromadb
 from typing import List, Dict, Any, Optional
-from sentence_transformers import SentenceTransformer
+from sentence_transformers import SentenceTransformer, CrossEncoder
 from app.core.config import settings
 from app.models.document import Document, DocumentResponse
 
@@ -11,6 +11,7 @@ class VectorService:
             name=settings.chroma_collection_name
         )
         self.embedding_model = SentenceTransformer(settings.embedding_model)
+        self.cross_encoder = CrossEncoder(settings.cross_encoder_model)
     
     async def add_document(self, document: Document) -> str:
         embedding = self.embedding_model.encode([document.content])[0].tolist()
@@ -42,23 +43,38 @@ class VectorService:
         if category_filter and category_filter != "string":
             where_filter = {"category": category_filter}
         
+        initial_limit = min(limit * 3, 20)
         results = self.collection.query(
             query_embeddings=[query_embedding],
-            n_results=limit,
+            n_results=initial_limit,
             where=where_filter
         )
         
         documents = []
         if results['ids'] and results['ids'][0]:
+            query_doc_pairs = []
+            temp_documents = []
+            
             for i, doc_id in enumerate(results['ids'][0]):
-                documents.append(DocumentResponse(
+                content = results['documents'][0][i]
+                query_doc_pairs.append([query, content])
+                temp_documents.append(DocumentResponse(
                     id=doc_id,
                     title=results['metadatas'][0][i]['title'],
                     category=results['metadatas'][0][i]['category'],
-                    content=results['documents'][0][i],
+                    content=content,
                     metadata=results['metadatas'][0][i],
                     similarity_score=1 - results['distances'][0][i] if 'distances' in results else None
                 ))
+            
+            if query_doc_pairs:
+                cross_scores = self.cross_encoder.predict(query_doc_pairs)
+                
+                for i, score in enumerate(cross_scores):
+                    temp_documents[i].similarity_score = float(score)
+            
+                temp_documents.sort(key=lambda x: x.similarity_score, reverse=True)
+                documents = temp_documents[:limit]
         
         return documents
     
